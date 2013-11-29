@@ -7,12 +7,15 @@ import argparse
 import re
 import platform
 from colorama import Fore,Back,Style,init
+from datetime import datetime
+from IPython import embed
 
 #todo add fields DoM-style object to the Screen structure
 #todo build a request & response obj to hold screens
 #todo store lots of req/responses with other pertinent info in a list, serialise to file
 #todo build replay
 
+# Object to hold a screen from x3270
 class tn3270_Screen:
 	def __init__(self, rawbuff):
 		self.rawbuffer = rawbuff
@@ -105,8 +108,27 @@ class tn3270_Screen:
 		strcolbuf = '\n'.join(colbuf) + Fore.RESET + Back.RESET
 		return strcolbuf
 
-def UpdateScreen(em,screen):
+# Object to hold an single tn3270 "transaction" i.e. request/response & timestamp
+class tn3270_Transaction:
+	def __init__(self, request, response):
+		# these should be tn3270_Screen objects
+		self.request = request
+		self.response = response
+		# For now I'm going to assume the last item in the list is the newest
+		self.timestamp = datetime.now()
+	
+class tn3270_History:
+	def __init__(self):
+		self.timeline = list()
+
+	def append(self, transaction):
+		self.timeline.append(transaction)
+		
+
+def UpdateScreen(em,history,screen):
 	screen = tn3270_Screen(em.exec_command('ReadBuffer(Ascii)').data)
+	trans = tn3270_Transaction(screen,None)
+	history.append(trans)
 	return screen
 
 # Print output that can be surpressed by a CLI opt
@@ -191,9 +213,11 @@ if results.quiet:
 	logger('Quiet Mode Enabled\t: Shhhhhhhhh!',kind='warn')
 
 connect_zOS(em,results.target) #connect to the host
-foo = em.exec_command('ReadBuffer(Ascii)')
-bar = tn3270_Screen(foo.data)
-logger(sys.stdin.readline(),kind='info')
+screen = tn3270_Screen
+history = tn3270_History
+screen = UpdateScreen(em,history,screen)
+
+embed() # Start IPython shell
 
 # And we're done. Close the connection
 em.terminate()
