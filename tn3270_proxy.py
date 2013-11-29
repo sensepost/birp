@@ -9,6 +9,7 @@ import platform
 from colorama import Fore,Back,Style,init
 from datetime import datetime
 from IPython import embed
+import curses
 
 #todo add fields DoM-style object to the Screen structure
 #todo build a request & response obj to hold screens
@@ -123,13 +124,59 @@ class tn3270_History:
 
 	def append(self, transaction):
 		self.timeline.append(transaction)
-		
+	
+# Send text without triggering field protection
+def safe_send(em, text):
+	for i in xrange(0,len(text)):
+		em.send_string(text[i])
+		if em.status.field_protection == 'P':
+			return False #We triggered field protection, stop
+	return True #Safe
 
-def UpdateScreen(em,history,screen):
+def safe_fieldfill(em, ypos, xpos, tosend, length):
+	if length - len(tosend) < 0:
+		raise FieldTruncateError('length limit %d, but got "%s"' % (length, tosend))
+	if xpos is not None and ypos is not None:
+		em.move_to(ypos, xpos)
+	try:
+		em.delete_field()
+		if safe_send(em, tosend):
+			return True #Hah, we win, take that mainframe
+		else:
+			return False #we entered what we could, bailing
+	except CommandError, e:
+		# We hit an error, get mad
+		return False
+		#if str(e) == 'Keyboard locked':
+
+# Search the screen for text when we don't know exactly where it is, checking for read errors
+def find_response(em, response):
+	for rows in xrange(1,int(em.status.row_number)+1):
+		for cols in xrange(1,int(em.status.col_number)+1-len(response)):
+			try:
+				if em.string_found(rows, cols, response):
+					return True
+			except CommandError, e:
+				# We hit a read error, usually because the screen hasn't returned
+				# increasing the delay works
+				time.sleep(results.sleep)
+				results.sleep += 1
+				whine('Read error encountered, assuming host is slow, increasing delay by 1s to: ' + str(results.sleep),kind='warn')
+				return False
+	return False
+
+# Update a screen object with the latest x3270 screen	
+def updateScreen(em,screen):
 	screen = tn3270_Screen(em.exec_command('ReadBuffer(Ascii)').data)
-	trans = tn3270_Transaction(screen,None)
-	history.append(trans)
 	return screen
+
+# Record the current screen, hit enter, and record the response
+def executeTrans(em,history):
+	request = UpdateScreen(em,response)
+	em.send_enter()
+	response = UpdateScreen(em,response)
+	trans = tn3270_Transaction(request,response)
+	history.append(trans)
 
 # Print output that can be surpressed by a CLI opt
 def logger(text, kind='clear', level=0):
@@ -175,6 +222,66 @@ else:
 	logger('Your Platform:', platform.system(), 'is not supported at this time.',kind='err')
 	sys.exit(1)
 
+def getPos(em):
+	results = em.exec_command('Query(Cursor)')
+	row = int(results.data[0].split(' ')[0])
+	col = int(results.data[0].split(' ')[1])
+	return (row,col)
+
+def interactive(em,history):
+	stdscr = curses.initscr()
+	curses.cbreak()
+	stdscr.keypad(1)
+	curses.raw()
+	pos = (0,0)
+	row = 0
+	col = 0
+	
+	#stdscr.addstr(0,10,"Hit ESC to quit")
+	stdscr.refresh()
+
+	key = ''
+	while key != 27:
+		key = stdscr.getch()
+		#stdscr.refresh()
+		if key == curses.KEY_UP: 
+			pos = getpos(em)
+			#row = pos[0]-1
+			#col = pos[1]
+			#em.exec_command('MoveCursor('+str(row)+','+str(col)+')')
+			em.exec_command('Up()')
+		elif key == curses.KEY_DOWN: 
+			em.exec_command('Down()')
+		elif key == curses.KEY_LEFT: 
+			em.exec_command('Left()')
+		elif key == curses.KEY_RIGHT: 
+			em.exec_command('Right()')
+		#elif key == curses.KEY_ENTER: # 343 != 10, may be OS specific
+		elif key == ord('\n'): #Enter 10
+			#em.send_enter()
+			executeTrans(em,history)
+		elif key == ord('	'): #Tab 9
+			em.exec_command('Tab()')
+		elif key == 8: #Backspace
+			em.exec_command('BackSpace()')
+		elif key == 127: #Delete
+			em.exec_command('Delete()')
+		elif key == 3: #Ctrl-c
+			em.exec_command('Clear()')
+		elif key == 17: #Ctrl-q
+			em.exec_command('#PA(1)')
+		elif key == 23: #Ctrl-w
+			em.exec_command('#PA(2)')
+		elif key == 5: #Ctrl-e
+			em.exec_command('#PA(3)')
+		elif key > 31 and key < 127: #Alphanumeric
+			safe_send(em, chr(key))
+		elif key > 264 and key < 289: #Send PFn key
+			fkey = key - 264
+			em.exec_command('#PF('+str(fkey)+')')
+	
+	curses.endwin()
+
 def connect_zOS(em, target):
 	logger('Connecting to ' + results.target,kind='info')
 	em.connect(target)
@@ -213,9 +320,7 @@ if results.quiet:
 	logger('Quiet Mode Enabled\t: Shhhhhhhhh!',kind='warn')
 
 connect_zOS(em,results.target) #connect to the host
-screen = tn3270_Screen
 history = tn3270_History
-screen = UpdateScreen(em,history,screen)
 
 embed() # Start IPython shell
 
