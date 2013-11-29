@@ -1,0 +1,33 @@
+  20 (intensified)
+   4 (nondisplay)
+  28 (protected)
+  26 (protected,intensified)
+  28 (protected,skip)
+   4 (protected,skip,nondisplay)
+
+
+  20 =c8)
+   4 =cc)
+  28 =e0)
+  26 =e8)
+  28 =f0)
+   4 =fc)
+
+c8 = intensified c0 + 8 - red
+cc = nondisplay c0 + c - pass field, red
+cd = nondisplay,modified
+e0 = protected c0 + 20 - blue
+e8 = protected,intensified c0 + 20 + 8 - white
+f0 = protected,skip c0 + 20 + 10 - clear
+fc = protected,skip,nondisplay c0 + 20 + 0c + 10 - hidden new col
+
+FA_PRINTABLE = 0xc0 	#these make the character "printable"
+FA_PROTECT = 0x20 		#unprotected (0) / protected (1)
+FA_NUMERIC = 0x10 		#alphanumeric (0) /numeric (1)Skip?
+FA_HIDDEN = 0x0c 		#display/selector pen detectable:
+FA_INT_NORM_NSEL = 0x00	# 00 normal, non-detect
+FA_INT_NORM_SEL = 0x04 	# 01 normal, detectable
+FA_INT_HIGH_SEL = 0x08 	# 10 intensified, detectable
+FA_INT_ZERO_NSEL = 0x0c	# 11 nondisplay, non-detect
+FA_RESERVED = 0x02 		#must be 0
+FA_MODIFY = 0x01 		#modified (1)

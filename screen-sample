@@ -1,0 +1,184 @@
+Original
+---------
+
+EraseWrite(reset,restore,resetMDT) 
+SetBufferAddress(1,1) RepeatToAddress(1,1)' ' 
+SetBufferAddress(1,1) StartField(protected,intensified) '------------------------------- TSO/E LOGON ------------------------------------' 
+SetBufferAddress(2,1) StartField(protected,intensified) '                                                                                ' 
+SetBufferAddress(3,1) StartField(protected,intensified) '                                                                                ' 
+SetBufferAddress(23,1) StartField(protected,intensified) 'PF1/PF13 ==> Help    PF3/PF15 ==> Logoff    PA1 ==> Attention    PA2 ==> Reshow' 
+SetBufferAddress(24,1) StartField(protected,intensified) 'You may request specific help information by entering a '?' in any entry field' 
+SetBufferAddress(4,4) StartField(protected,intensified) 'Enter LOGON parameters below:' 
+SetBufferAddress(4,52) StartField(protected,intensified) 'RACF LOGON parameters:' 
+SetBufferAddress(6,3) StartField(protected) ' Userid    ===>' 
+SetBufferAddress(6,19) StartField(protected,intensified) 'IBMUSER'
+StartField(6,27)(protected,skip) 
+SetBufferAddress(8,3) StartField(protected) ' Password  ===>' 
+SetBufferAddress(8,19) StartField(nondisplay) NULL NULL NULL NULL NULL NULL NULL NULL
+StartField(8,28)(protected,skip) 
+SetBufferAddress(12,3) StartField(protected) ' Acct Nmbr ===>' 
+SetBufferAddress(12,19) StartField(intensified) 'ACCT#' NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL
+StartField(12,60)(protected,skip) 
+SetBufferAddress(10,3) StartField(protected) ' Procedure ===>' 
+SetBufferAddress(10,19) StartField(intensified) 'VSUMPROC'
+StartField(10,28)(protected,skip) 
+SetBufferAddress(14,3) StartField(protected) ' Size      ===>' 
+SetBufferAddress(14,19) StartField(intensified) '2048000'
+StartField(14,27)(protected,skip) 
+SetBufferAddress(16,3) StartField(protected) ' Perform   ===>' 
+SetBufferAddress(16,19) StartField(intensified) NULL NULL NULL
+StartField(16,23)(protected,skip) 
+SetBufferAddress(10,51) StartField(protected) ' Group Ident  ===>' 
+SetBufferAddress(10,70) StartField(intensified) NULL NULL NULL NULL NULL NULL NULL NULL
+StartField(10,79)(protected,skip) 
+SetBufferAddress(8,51) StartField(protected) ' New Password ===>' 
+SetBufferAddress(8,70) StartField(nondisplay) NULL NULL NULL NULL NULL NULL NULL NULL
+StartField(8,79)(protected,skip) 
+SetBufferAddress(20,4) StartField(protected,intensified) 'Enter an 'S' before each option desired below:'
+StartField(20,51)(protected) 
+SetBufferAddress(21,8) StartField(protected,intensified) NULL 
+SetBufferAddress(21,10) StartField(intensified) ' '
+StartField(21,12)(protected,skip) '-Nomail'
+StartField(21,20)(protected) 
+SetBufferAddress(21,24) StartField(protected,intensified) NULL 
+SetBufferAddress(21,26) StartField(intensified) ' '
+StartField(21,28)(protected,skip) '-Nonotice'
+StartField(21,38)(protected) 
+SetBufferAddress(21,41) StartField(protected,intensified) NULL 
+SetBufferAddress(21,43) StartField(intensified) 'S'
+StartField(21,45)(protected,skip) '-Reconnect'
+StartField(21,56)(protected) 
+SetBufferAddress(21,59) StartField(protected,intensified) NULL 
+SetBufferAddress(21,61) StartField(intensified) ' '
+StartField(21,63)(protected,skip) '-OIDcard '
+StartField(21,73)(protected) 
+SetBufferAddress(18,3) StartField(protected) ' Command   ===>' 
+SetBufferAddress(18,19) StartField(intensified) 'ispf                                                                            '
+StartField(19,20)(protected,skip) 
+SetBufferAddress(6,51) StartField(protected,skip,nondisplay) ' Seclabel     ===>' 
+SetBufferAddress(6,70) StartField(protected,skip,nondisplay) '        '
+StartField(6,79)(protected,skip) 
+SetBufferAddress(8,20) InsertCursor
+
+Ordered
+-------
+
+EraseWrite(reset,restore,resetMDT) 
+SetBufferAddress(1,1) RepeatToAddress(1,1)' ' 
+SetBufferAddress(1,1) StartField(protected,intensified) '------------------------------- TSO/E LOGON ------------------------------------' 
+SetBufferAddress(2,1) StartField(protected,intensified) '                                                                                ' 
+SetBufferAddress(3,1) StartField(protected,intensified) '                                                                                ' 
+SetBufferAddress(4,4) StartField(protected,intensified) 'Enter LOGON parameters below:' 
+SetBufferAddress(4,52) StartField(protected,intensified) 'RACF LOGON parameters:' 
+SetBufferAddress(6,3) StartField(protected) ' Userid    ===>' 
+SetBufferAddress(6,19) StartField(protected,intensified) 'IBMUSER'
+StartField(6,27)(protected,skip) 
+SetBufferAddress(6,51) StartField(protected,skip,nondisplay) ' Seclabel     ===>' 
+SetBufferAddress(6,70) StartField(protected,skip,nondisplay) '        '
+StartField(6,79)(protected,skip) 
+SetBufferAddress(8,3) StartField(protected) ' Password  ===>' 
+SetBufferAddress(8,19) StartField(nondisplay) NULL NULL NULL NULL NULL NULL NULL NULL
+StartField(8,28)(protected,skip) 
+SetBufferAddress(8,20) InsertCursor
+SetBufferAddress(8,51) StartField(protected) ' New Password ===>' 
+SetBufferAddress(8,70) StartField(nondisplay) NULL NULL NULL NULL NULL NULL NULL NULL
+StartField(8,79)(protected,skip) 
+SetBufferAddress(10,3) StartField(protected) ' Procedure ===>' 
+SetBufferAddress(10,19) StartField(intensified) 'VSUMPROC'
+StartField(10,28)(protected,skip) 
+SetBufferAddress(10,51) StartField(protected) ' Group Ident  ===>' 
+SetBufferAddress(10,70) StartField(intensified) NULL NULL NULL NULL NULL NULL NULL NULL
+StartField(10,79)(protected,skip) 
+SetBufferAddress(12,3) StartField(protected) ' Acct Nmbr ===>' 
+SetBufferAddress(12,19) StartField(intensified) 'ACCT#' NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL
+StartField(12,60)(protected,skip) 
+SetBufferAddress(14,3) StartField(protected) ' Size      ===>' 
+SetBufferAddress(14,19) StartField(intensified) '2048000'
+StartField(14,27)(protected,skip) 
+SetBufferAddress(16,3) StartField(protected) ' Perform   ===>' 
+SetBufferAddress(16,19) StartField(intensified) NULL NULL NULL
+StartField(16,23)(protected,skip) 
+SetBufferAddress(18,3) StartField(protected) ' Command   ===>' 
+SetBufferAddress(18,19) StartField(intensified) 'ispf                                                                            '
+StartField(19,20)(protected,skip) 
+SetBufferAddress(20,4) StartField(protected,intensified) 'Enter an 'S' before each option desired below:'
+StartField(20,51)(protected) 
+SetBufferAddress(21,8) StartField(protected,intensified) NULL 
+SetBufferAddress(21,10) StartField(intensified) ' '
+StartField(21,12)(protected,skip) '-Nomail'
+StartField(21,20)(protected) 
+SetBufferAddress(21,24) StartField(protected,intensified) NULL 
+SetBufferAddress(21,26) StartField(intensified) ' '
+StartField(21,28)(protected,skip) '-Nonotice'
+StartField(21,38)(protected) 
+SetBufferAddress(21,41) StartField(protected,intensified) NULL 
+SetBufferAddress(21,43) StartField(intensified) 'S'
+StartField(21,45)(protected,skip) '-Reconnect'
+StartField(21,56)(protected) 
+SetBufferAddress(21,59) StartField(protected,intensified) NULL 
+SetBufferAddress(21,61) StartField(intensified) ' '
+StartField(21,63)(protected,skip) '-OIDcard '
+StartField(21,73)(protected) 
+SetBufferAddress(23,1) StartField(protected,intensified) 'PF1/PF13 ==> Help    PF3/PF15 ==> Logoff    PA1 ==> Attention    PA2 ==> Reshow' 
+SetBufferAddress(24,1) StartField(protected,intensified) 'You may request specific help information by entering a '?' in any entry field' 
+
+Screen
+------
+
+ ------------------------------- TSO/E LOGON -----------------------------------
+                                                                                
+                                                                                
+    Enter LOGON parameters below:                   RACF LOGON parameters:      
+                                                                                
+    Userid    ===> IBMUSER                                                      
+                                                                                
+    Password  ===>                                  New Password ===>           
+                                                                                
+    Procedure ===> VSUMPROC                         Group Ident  ===>           
+                                                                                
+    Acct Nmbr ===> ACCT#                                                        
+                                                                                
+    Size      ===> 2048000                                                      
+                                                                                
+    Perform   ===>                                                              
+                                                                                
+    Command   ===> ispf                                                         
+                                                                                
+    Enter an 'S' before each option desired below:                              
+            -Nomail         -Nonotice      S -Reconnect        -OIDcard         
+                                                                                
+ PF1/PF13 ==> Help    PF3/PF15 ==> Logoff    PA1 ==> Attention    PA2 ==> Reshow
+ You may request specific help information by entering a '?' in any entry field 
+
+Buffer
+------
+
+['SF(c0=e8) 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 20 54 53 4f 2f 45 20 4c 4f 47 4f 4e 20 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d', 'SF(c0=e8) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20', 'SF(c0=e8) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20', '20 20 20 SF(c0=e8) 45 6e 74 65 72 20 4c 4f 47 4f 4e 20 70 61 72 61 6d 65 74 65 72 73 20 62 65 6c 6f 77 3a 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 SF(c0=e8) 52 41 43 46 20 4c 4f 47 4f 4e 20 70 61 72 61 6d 65 74 65 72 73 3a 20 20 20 20 20 20', '20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20', '20 20 SF(c0=e0) 20 55 73 65 72 69 64 20 20 20 20 3d 3d 3d 3e SF(c0=e8) 49 42 4d 55 53 45 52 SF(c0=f0) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 SF(c0=fc) 20 53 65 63 6c 61 62 65 6c 20 20 20 20 20 3d 3d 3d 3e SF(c0=fc) 20 20 20 20 20 20 20 20 SF(c0=f0) 20', '20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20', '20 20 SF(c0=e0) 20 50 61 73 73 77 6f 72 64 20 20 3d 3d 3d 3e SF(c0=cc) 00 00 00 00 00 00 00 00 SF(c0=f0) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 SF(c0=e0) 20 4e 65 77 20 50 61 73 73 77 6f 72 64 20 3d 3d 3d 3e SF(c0=cc) 00 00 00 00 00 00 00 00 SF(c0=f0) 20', '20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20', '20 20 SF(c0=e0) 20 50 72 6f 63 65 64 75 72 65 20 3d 3d 3d 3e SF(c0=c8) 43 4f 4d 4e 50 52 4f 43 SF(c0=f0) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 SF(c0=e0) 20 47 72 6f 75 70 20 49 64 65 6e 74 20 20 3d 3d 3d 3e SF(c0=c8) 00 00 00 00 00 00 00 00 SF(c0=f0) 20', '20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20', '20 20 SF(c0=e0) 20 41 63 63 74 20 4e 6d 62 72 20 3d 3d 3d 3e SF(c0=c8) 41 43 43 54 23 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 SF(c0=f0) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20', '20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20', '20 20 SF(c0=e0) 20 53 69 7a 65 20 20 20 20 20 20 3d 3d 3d 3e SF(c0=c8) 32 30 34 38 30 30 30 SF(c0=f0) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20', '20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20', '20 20 SF(c0=e0) 20 50 65 72 66 6f 72 6d 20 20 20 3d 3d 3d 3e SF(c0=c8) 00 00 00 SF(c0=f0) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20', '20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20', '20 20 SF(c0=e0) 20 43 6f 6d 6d 61 6e 64 20 20 20 3d 3d 3d 3e SF(c0=c8) 49 53 50 46 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20', '20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 SF(c0=f0) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20', '20 20 20 SF(c0=e8) 45 6e 74 65 72 20 61 6e 20 27 53 27 20 62 65 66 6f 72 65 20 65 61 63 68 20 6f 70 74 69 6f 6e 20 64 65 73 69 72 65 64 20 62 65 6c 6f 77 3a SF(c0=e0) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20', '20 20 20 20 20 20 20 SF(c0=e8) 00 SF(c0=c8) 20 SF(c0=f0) 2d 4e 6f 6d 61 69 6c SF(c0=e0) 20 20 20 SF(c0=e8) 00 SF(c0=c8) 20 SF(c0=f0) 2d 4e 6f 6e 6f 74 69 63 65 SF(c0=e0) 20 20 SF(c0=e8) 00 SF(c0=c8) 00 SF(c0=f0) 2d 52 65 63 6f 6e 6e 65 63 74 SF(c0=e0) 20 20 SF(c0=e8) 00 SF(c0=c8) 20 SF(c0=f0) 2d 4f 49 44 63 61 72 64 20 SF(c0=e0) 20 20 20 20 20 20 20', '20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20', 'SF(c0=e8) 50 46 31 2f 50 46 31 33 20 3d 3d 3e 20 48 65 6c 70 20 20 20 20 50 46 33 2f 50 46 31 35 20 3d 3d 3e 20 4c 6f 67 6f 66 66 20 20 20 20 50 41 31 20 3d 3d 3e 20 41 74 74 65 6e 74 69 6f 6e 20 20 20 20 50 41 32 20 3d 3d 3e 20 52 65 73 68 6f 77', 'SF(c0=e8) 59 6f 75 20 6d 61 79 20 72 65 71 75 65 73 74 20 73 70 65 63 69 66 69 63 20 68 65 6c 70 20 69 6e 66 6f 72 6d 61 74 69 6f 6e 20 62 79 20 65 6e 74 65 72 69 6e 67 20 61 20 27 3f 27 20 69 6e 20 61 6e 79 20 65 6e 74 72 79 20 66 69 65 6c 64 20']
+
+
+[
+'SF(c0=e8) 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 20 54 53 4f 2f 45 20 4c 4f 47 4f 4e 20 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d 2d',
+'SF(c0=e8) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20',
+'SF(c0=e8) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20',
+'20 20 20 SF(c0=e8) 45 6e 74 65 72 20 4c 4f 47 4f 4e 20 70 61 72 61 6d 65 74 65 72 73 20 62 65 6c 6f 77 3a 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 SF(c0=e8) 52 41 43 46 20 4c 4f 47 4f 4e 20 70 61 72 61 6d 65 74 65 72 73 3a 20 20 20 20 20 20',
+'20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20',
+'20 20 SF(c0=e0) 20 55 73 65 72 69 64 20 20 20 20 3d 3d 3d 3e SF(c0=e8) 49 42 4d 55 53 45 52 SF(c0=f0) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 SF(c0=fc) 20 53 65 63 6c 61 62 65 6c 20 20 20 20 20 3d 3d 3d 3e SF(c0=fc) 20 20 20 20 20 20 20 20 SF(c0=f0) 20',
+'20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20',
+'20 20 SF(c0=e0) 20 50 61 73 73 77 6f 72 64 20 20 3d 3d 3d 3e SF(c0=cc) 00 00 00 00 00 00 00 00 SF(c0=f0) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 SF(c0=e0) 20 4e 65 77 20 50 61 73 73 77 6f 72 64 20 3d 3d 3d 3e SF(c0=cc) 00 00 00 00 00 00 00 00 SF(c0=f0) 20',
+'20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20',
+'20 20 SF(c0=e0) 20 50 72 6f 63 65 64 75 72 65 20 3d 3d 3d 3e SF(c0=c8) 43 4f 4d 4e 50 52 4f 43 SF(c0=f0) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 SF(c0=e0) 20 47 72 6f 75 70 20 49 64 65 6e 74 20 20 3d 3d 3d 3e SF(c0=c8) 00 00 00 00 00 00 00 00 SF(c0=f0) 20',
+'20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20',
+'20 20 SF(c0=e0) 20 41 63 63 74 20 4e 6d 62 72 20 3d 3d 3d 3e SF(c0=c8) 41 43 43 54 23 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 SF(c0=f0) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20',
+'20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20',
+'20 20 SF(c0=e0) 20 53 69 7a 65 20 20 20 20 20 20 3d 3d 3d 3e SF(c0=c8) 32 30 34 38 30 30 30 SF(c0=f0) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20',
+'20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20',
+'20 20 SF(c0=e0) 20 50 65 72 66 6f 72 6d 20 20 20 3d 3d 3d 3e SF(c0=c8) 00 00 00 SF(c0=f0) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20',
+'20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20',
+'20 20 SF(c0=e0) 20 43 6f 6d 6d 61 6e 64 20 20 20 3d 3d 3d 3e SF(c0=c8) 49 53 50 46 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20',
+'20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 SF(c0=f0) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20',
+'20 20 20 SF(c0=e8) 45 6e 74 65 72 20 61 6e 20 27 53 27 20 62 65 66 6f 72 65 20 65 61 63 68 20 6f 70 74 69 6f 6e 20 64 65 73 69 72 65 64 20 62 65 6c 6f 77 3a SF(c0=e0) 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20',
+'20 20 20 20 20 20 20 SF(c0=e8) 00 SF(c0=c8) 20 SF(c0=f0) 2d 4e 6f 6d 61 69 6c SF(c0=e0) 20 20 20 SF(c0=e8) 00 SF(c0=c8) 20 SF(c0=f0) 2d 4e 6f 6e 6f 74 69 63 65 SF(c0=e0) 20 20 SF(c0=e8) 00 SF(c0=c8) 00 SF(c0=f0) 2d 52 65 63 6f 6e 6e 65 63 74 SF(c0=e0) 20 20 SF(c0=e8) 00 SF(c0=c8) 20 SF(c0=f0) 2d 4f 49 44 63 61 72 64 20 SF(c0=e0) 20 20 20 20 20 20 20',
+'20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20',
+'SF(c0=e8) 50 46 31 2f 50 46 31 33 20 3d 3d 3e 20 48 65 6c 70 20 20 20 20 50 46 33 2f 50 46 31 35 20 3d 3d 3e 20 4c 6f 67 6f 66 66 20 20 20 20 50 41 31 20 3d 3d 3e 20 41 74 74 65 6e 74 69 6f 6e 20 20 20 20 50 41 32 20 3d 3d 3e 20 52 65 73 68 6f 77',
+'SF(c0=e8) 59 6f 75 20 6d 61 79 20 72 65 71 75 65 73 74 20 73 70 65 63 69 66 69 63 20 68 65 6c 70 20 69 6e 66 6f 72 6d 61 74 69 6f 6e 20 62 79 20 65 6e 74 65 72 69 6e 67 20 61 20 27 3f 27 20 69 6e 20 61 6e 79 20 65 6e 74 72 79 20 66 69 65 6c 64 20'
+]
