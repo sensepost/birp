@@ -10,6 +10,7 @@ from colorama import Fore,Back,Style,init
 from datetime import datetime
 from IPython import embed
 import curses
+import curses.wrapper
 
 #todo add fields DoM-style object to the Screen structure
 #todo build a request & response obj to hold screens
@@ -108,6 +109,67 @@ class tn3270_Screen:
 			colbuf.append(''.join(newline))
 		strcolbuf = '\n'.join(colbuf) + Fore.RESET + Back.RESET
 		return strcolbuf
+	'''
+	@property
+	# Highlight different fields so we can see what is really going on on the screen
+	# This looks at field markers only and ignores colours asked for by the host
+	def cursesbuffer(self):
+		colbuf = list()
+		curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
+		curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_RED)
+		curses.init_pair(3, curses.COLOR_MAGENTA, curses.COLOR_RED)
+		curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
+		curses.init_pair(5, curses.COLOR_RED, curses.COLOR_GREEN)
+		curses.init_pair(6, curses.COLOR_BLUE, curses.COLOR_GREEN)
+		curses.init_pair(7, curses.COLOR_RED, curses.COLOR_WHITE)
+		curses.init_pair(8, curses.COLOR_RED, curses.COLOR_BLACK)
+		color_pair = 8 #Highlight unfield'ed text
+
+		for line in self.rawbuffer:
+			newline = list()
+			for i in line.split(' '):
+				# SF(c0=c8) is example of StartField markup
+				if len(i) > 3 and i.find('SF(') >= 0:
+					attrib = int(i[3:5],16)
+					val = int(i[6:8],16)
+					if (val | self.FA_PROTECT | self.FA_HIDDEN | self.FA_NUMERIC) == val:
+						#hidden protected field - Green on Red
+						color_pair = 2
+					elif (val | self.FA_PROTECT | self.FA_NUMERIC) == val:
+						#protected & numeric/skip - Clear
+						color_pair = 1
+					elif (val | self.FA_PROTECT | self.FA_INT_HIGH_SEL) == val:
+						#protected & intense  - White on Clear
+						color_pair = 1
+					elif (val | self.FA_PROTECT | self.FA_MODIFY) == val:
+						#protected & modified? - Magenta on Red
+						color_pair = 3
+					elif (val | self.FA_PROTECT) == val:
+						#labels - Blue on Clear
+						color_pair = 4
+					elif (val | self.FA_INT_HIGH_SEL) == val or (val | self.FA_INT_NORM_SEL) == val:
+						#normal input field - Red on Green
+						color_pair = 5
+					elif (val | self.FA_HIDDEN) == val or (val | self.FA_INT_NORM_NSEL) == val or (val | self.FA_INT_ZERO_NSEL) == val:
+						#hidden unprotected input field - Blue on Green
+						color_pair = 6
+
+					#if (val | self.FA_MODIFY) == val:
+						#modified text - Purple on Existing
+						#newline.append(curses.COLOR_MAGENTA)
+
+					newline.append('|') #Field marker
+					
+
+				elif len(i) == 2:
+					if i == '00':
+						newline.append(" ")
+					else:
+						newline.append(i.decode("hex"))
+			colbuf.append(''.join(newline))
+		strcolbuf = '\n'.join(colbuf) + curses.COLOR_RESET + Back.RESET
+		return strcolbuf
+	'''
 
 # Object to hold an single tn3270 "transaction" i.e. request/response & timestamp
 class tn3270_Transaction:
@@ -117,6 +179,15 @@ class tn3270_Transaction:
 		self.response = response
 		# For now I'm going to assume the last item in the list is the newest
 		self.timestamp = datetime.now()
+
+	def getTime(self):
+		return self.timestamp
+
+	def getRequest(self):
+		return self.request
+
+	def getResponse(self):
+		return self.response
 	
 class tn3270_History:
 	def __init__(self):
@@ -124,6 +195,13 @@ class tn3270_History:
 
 	def append(self, transaction):
 		self.timeline.append(transaction)
+
+	def last(self):
+		return self.timeline[len(self.timeline)-1]
+
+	@property
+	def len(self):
+		return len(self.timeline)
 	
 # Send text without triggering field protection
 def safe_send(em, text):
@@ -172,11 +250,14 @@ def updateScreen(em,screen):
 
 # Record the current screen, hit enter, and record the response
 def executeTrans(em,history):
-	request = UpdateScreen(em,response)
+	request = tn3270_Screen
+	response = tn3270_Screen
+	request = updateScreen(em,request)
 	em.send_enter()
-	response = UpdateScreen(em,response)
+	response = updateScreen(em,response)
 	trans = tn3270_Transaction(request,response)
 	history.append(trans)
+	return trans
 
 # Print output that can be surpressed by a CLI opt
 def logger(text, kind='clear', level=0):
@@ -245,7 +326,7 @@ def interactive(em,history):
 		key = stdscr.getch()
 		#stdscr.refresh()
 		if key == curses.KEY_UP: 
-			pos = getpos(em)
+			#pos = getpos(em)
 			#row = pos[0]-1
 			#col = pos[1]
 			#em.exec_command('MoveCursor('+str(row)+','+str(col)+')')
@@ -259,7 +340,10 @@ def interactive(em,history):
 		#elif key == curses.KEY_ENTER: # 343 != 10, may be OS specific
 		elif key == ord('\n'): #Enter 10
 			#em.send_enter()
-			executeTrans(em,history)
+			trans = executeTrans(em,history)
+			#stdscr.addstr(0,0,trans.getResponse().colourbuffer)
+			curses.endwin()
+			print trans.getResponse().colourbuffer
 		elif key == ord('	'): #Tab 9
 			em.exec_command('Tab()')
 		elif key == 8: #Backspace
@@ -279,8 +363,14 @@ def interactive(em,history):
 		elif key > 264 and key < 289: #Send PFn key
 			fkey = key - 264
 			em.exec_command('#PF('+str(fkey)+')')
-	
+
+	curses.nocbreak()
+	stdscr.keypad(0)
+	curses.echo()	
 	curses.endwin()
+
+def ia(em,history):
+	curses.wrapper(interactive(em,history))
 
 def connect_zOS(em, target):
 	logger('Connecting to ' + results.target,kind='info')
@@ -320,7 +410,8 @@ if results.quiet:
 	logger('Quiet Mode Enabled\t: Shhhhhhhhh!',kind='warn')
 
 connect_zOS(em,results.target) #connect to the host
-history = tn3270_History
+history = tn3270_History()
+type(history)
 
 embed() # Start IPython shell
 
