@@ -9,8 +9,7 @@ import platform
 from colorama import Fore,Back,Style,init
 from datetime import datetime
 from IPython import embed
-import curses
-import curses.wrapper
+from getch import getch
 
 #todo add fields DoM-style object to the Screen structure
 #todo build a request & response obj to hold screens
@@ -109,67 +108,6 @@ class tn3270_Screen:
 			colbuf.append(''.join(newline))
 		strcolbuf = '\n'.join(colbuf) + Fore.RESET + Back.RESET
 		return strcolbuf
-	'''
-	@property
-	# Highlight different fields so we can see what is really going on on the screen
-	# This looks at field markers only and ignores colours asked for by the host
-	def cursesbuffer(self):
-		colbuf = list()
-		curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
-		curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_RED)
-		curses.init_pair(3, curses.COLOR_MAGENTA, curses.COLOR_RED)
-		curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
-		curses.init_pair(5, curses.COLOR_RED, curses.COLOR_GREEN)
-		curses.init_pair(6, curses.COLOR_BLUE, curses.COLOR_GREEN)
-		curses.init_pair(7, curses.COLOR_RED, curses.COLOR_WHITE)
-		curses.init_pair(8, curses.COLOR_RED, curses.COLOR_BLACK)
-		color_pair = 8 #Highlight unfield'ed text
-
-		for line in self.rawbuffer:
-			newline = list()
-			for i in line.split(' '):
-				# SF(c0=c8) is example of StartField markup
-				if len(i) > 3 and i.find('SF(') >= 0:
-					attrib = int(i[3:5],16)
-					val = int(i[6:8],16)
-					if (val | self.FA_PROTECT | self.FA_HIDDEN | self.FA_NUMERIC) == val:
-						#hidden protected field - Green on Red
-						color_pair = 2
-					elif (val | self.FA_PROTECT | self.FA_NUMERIC) == val:
-						#protected & numeric/skip - Clear
-						color_pair = 1
-					elif (val | self.FA_PROTECT | self.FA_INT_HIGH_SEL) == val:
-						#protected & intense  - White on Clear
-						color_pair = 1
-					elif (val | self.FA_PROTECT | self.FA_MODIFY) == val:
-						#protected & modified? - Magenta on Red
-						color_pair = 3
-					elif (val | self.FA_PROTECT) == val:
-						#labels - Blue on Clear
-						color_pair = 4
-					elif (val | self.FA_INT_HIGH_SEL) == val or (val | self.FA_INT_NORM_SEL) == val:
-						#normal input field - Red on Green
-						color_pair = 5
-					elif (val | self.FA_HIDDEN) == val or (val | self.FA_INT_NORM_NSEL) == val or (val | self.FA_INT_ZERO_NSEL) == val:
-						#hidden unprotected input field - Blue on Green
-						color_pair = 6
-
-					#if (val | self.FA_MODIFY) == val:
-						#modified text - Purple on Existing
-						#newline.append(curses.COLOR_MAGENTA)
-
-					newline.append('|') #Field marker
-					
-
-				elif len(i) == 2:
-					if i == '00':
-						newline.append(" ")
-					else:
-						newline.append(i.decode("hex"))
-			colbuf.append(''.join(newline))
-		strcolbuf = '\n'.join(colbuf) + curses.COLOR_RESET + Back.RESET
-		return strcolbuf
-	'''
 
 # Object to hold an single tn3270 "transaction" i.e. request/response & timestamp
 class tn3270_Transaction:
@@ -310,67 +248,70 @@ def getPos(em):
 	return (row,col)
 
 def interactive(em,history):
-	stdscr = curses.initscr()
-	curses.cbreak()
-	stdscr.keypad(1)
-	curses.raw()
-	pos = (0,0)
-	row = 0
-	col = 0
-	
-	#stdscr.addstr(0,10,"Hit ESC to quit")
-	stdscr.refresh()
-
 	key = ''
-	while key != 27:
-		key = stdscr.getch()
-		#stdscr.refresh()
-		if key == curses.KEY_UP: 
-			#pos = getpos(em)
-			#row = pos[0]-1
-			#col = pos[1]
-			#em.exec_command('MoveCursor('+str(row)+','+str(col)+')')
+	while key != getch.KEY_ESC:
+		key = getch()
+		if key == getch.KEY_UP: #Up
 			em.exec_command('Up()')
-		elif key == curses.KEY_DOWN: 
+		elif key == getch.KEY_DOWN: #Down
 			em.exec_command('Down()')
-		elif key == curses.KEY_LEFT: 
+		elif key == getch.KEY_LEFT: #Left
 			em.exec_command('Left()')
-		elif key == curses.KEY_RIGHT: 
+		elif key == getch.KEY_RIGHT: #Right
 			em.exec_command('Right()')
-		#elif key == curses.KEY_ENTER: # 343 != 10, may be OS specific
-		elif key == ord('\n'): #Enter 10
-			#em.send_enter()
+		elif key == getch.KEY_ENTER: #Enter
 			trans = executeTrans(em,history)
-			#stdscr.addstr(0,0,trans.getResponse().colourbuffer)
-			curses.endwin()
 			print trans.getResponse().colourbuffer
-		elif key == ord('	'): #Tab 9
+		elif key == getch.KEY_TAB: #Tab 9
 			em.exec_command('Tab()')
-		elif key == 8: #Backspace
+		elif key == getch.KEY_BACKSPACE: #Backspace
 			em.exec_command('BackSpace()')
-		elif key == 127: #Delete
+		elif key == getch.KEY_DELETE: #Delete
 			em.exec_command('Delete()')
-		elif key == 3: #Ctrl-c
+		elif key == getch.KEY_CTRLc: #Ctrl-c
 			em.exec_command('Clear()')
-		elif key == 17: #Ctrl-q
+		elif key == getch.KEY_CTRLq: #Ctrl-q
 			em.exec_command('#PA(1)')
-		elif key == 23: #Ctrl-w
+		elif key == getch.KEY_CTRLw: #Ctrl-w
 			em.exec_command('#PA(2)')
-		elif key == 5: #Ctrl-e
+		elif key == getch.KEY_CTRLe: #Ctrl-e
 			em.exec_command('#PA(3)')
 		elif key > 31 and key < 127: #Alphanumeric
 			safe_send(em, chr(key))
-		elif key > 264 and key < 289: #Send PFn key
-			fkey = key - 264
-			em.exec_command('#PF('+str(fkey)+')')
-
-	curses.nocbreak()
-	stdscr.keypad(0)
-	curses.echo()	
-	curses.endwin()
-
-def ia(em,history):
-	curses.wrapper(interactive(em,history))
+		elif key == getch.KEY_F1:
+			em.exec_command('#PF(1)')
+		elif key == getch.KEY_F2:
+			em.exec_command('#PF(2)')
+		elif key == getch.KEY_F3:
+			em.exec_command('#PF(3)')
+		elif key == getch.KEY_F4:
+			em.exec_command('#PF(4)')
+		elif key == getch.KEY_F5:
+			em.exec_command('#PF(5)')
+		elif key == getch.KEY_F6:
+			em.exec_command('#PF(6)')
+		elif key == getch.KEY_F7:
+			em.exec_command('#PF(7)')
+		elif key == getch.KEY_F8:
+			em.exec_command('#PF(8)')
+		elif key == getch.KEY_F9:
+			em.exec_command('#PF(9)')
+		elif key == getch.KEY_F10:
+			em.exec_command('#PF(10)')
+		elif key == getch.KEY_F11:
+			em.exec_command('#PF(11)')
+		elif key == getch.KEY_F12:
+			em.exec_command('#PF(12)')
+		elif key == getch.KEY_AltF8:
+			em.exec_command('#PF(13)')
+		elif key == getch.KEY_AltF9:
+			em.exec_command('#PF(14)')
+		elif key == getch.KEY_AltF10:
+			em.exec_command('#PF(15)')
+		elif key == getch.KEY_AltF11:
+			em.exec_command('#PF(16)')
+		elif key == getch.KEY_AltF12:
+			em.exec_command('#PF(24)')
 
 def connect_zOS(em, target):
 	logger('Connecting to ' + results.target,kind='info')
@@ -411,7 +352,6 @@ if results.quiet:
 
 connect_zOS(em,results.target) #connect to the host
 history = tn3270_History()
-type(history)
 
 embed() # Start IPython shell
 
