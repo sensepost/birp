@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from py3270 import EmulatorBase,CommandError,FieldTruncateError
+import os
 import time
 import sys 
 import argparse
@@ -10,10 +11,10 @@ from colorama import Fore,Back,Style,init
 from datetime import datetime
 from IPython import embed
 from getch import getch
+import pickle
 
 #todo add fields DoM-style object to the Screen structure
-#todo build a request & response obj to hold screens
-#todo store lots of req/responses with other pertinent info in a list, serialise to file
+#todo serialise to file
 #todo build replay
 
 # Object to hold a screen from x3270
@@ -55,12 +56,12 @@ class tn3270_Screen:
 
 	# A pretty printed version converting NULL to ' '
 	def tostring(self):
-		return '\n'.join(bar.stringbuffer).replace('\x00',' ')
+		return '\n'.join(self.stringbuffer).replace('\x00',' ')
 
 	@property
 	# Highlight different fields so we can see what is really going on on the screen
 	# This looks at field markers only and ignores colours asked for by the host
-	def colourbuffer(self):
+	def colorbuffer(self):
 		colbuf = list()
 		colbuf.append(Fore.RED) #Highlight unfield'ed text
 		for line in self.rawbuffer:
@@ -111,25 +112,23 @@ class tn3270_Screen:
 
 # Object to hold an single tn3270 "transaction" i.e. request/response & timestamp
 class tn3270_Transaction:
-	def __init__(self, request, response):
+	def __init__(self, request, response, key='enter', host='', comment=''):
 		# these should be tn3270_Screen objects
 		self.request = request
 		self.response = response
 		# For now I'm going to assume the last item in the list is the newest
 		self.timestamp = datetime.now()
-
-	def getTime(self):
-		return self.timestamp
-
-	def getRequest(self):
-		return self.request
-
-	def getResponse(self):
-		return self.response
+		# What key initiated the transaction
+		self.key = key
+		self.comment = comment
+		self.host = host
 	
 class tn3270_History:
 	def __init__(self):
 		self.timeline = list()
+
+	def __getitem__(self, index):
+		return self.timeline[index]
 
 	def append(self, transaction):
 		self.timeline.append(transaction)
@@ -140,6 +139,18 @@ class tn3270_History:
 	@property
 	def len(self):
 		return len(self.timeline)
+
+def compare_screen(screen1,screen2,exact=False):
+	diffcount = 0
+	linecount = 0
+	for line in screen1.rawbuffer:
+		if screen1.rawbuffer[linecount] != screen2.rawbuffer[linecount]:
+			diffcount += 1
+			if exact:
+				return 0
+			elif diffcount > 2:
+				return 0 #More than two lines different they're different
+	return True #screens are the same
 	
 # Send text without triggering field protection
 def safe_send(em, text):
@@ -149,6 +160,7 @@ def safe_send(em, text):
 			return False #We triggered field protection, stop
 	return True #Safe
 
+# Fill fields in carefully, checking for triggering field protections
 def safe_fieldfill(em, ypos, xpos, tosend, length):
 	if length - len(tosend) < 0:
 		raise FieldTruncateError('length limit %d, but got "%s"' % (length, tosend))
@@ -182,18 +194,30 @@ def find_response(em, response):
 	return False
 
 # Update a screen object with the latest x3270 screen	
-def updateScreen(em,screen):
+def update_screen(em,screen):
 	screen = tn3270_Screen(em.exec_command('ReadBuffer(Ascii)').data)
 	return screen
 
 # Record the current screen, hit enter, and record the response
-def executeTrans(em,history):
+def exec_trans(em,history,key='enter'):
 	request = tn3270_Screen
 	response = tn3270_Screen
-	request = updateScreen(em,request)
-	em.send_enter()
-	response = updateScreen(em,response)
-	trans = tn3270_Transaction(request,response)
+	request = update_screen(em,request)
+	keypress = ''
+	hostinfo = em.exec_command('Query(Host)').data[0].split(' ')
+	host = hostinfo[1]+':'+hostinfo[2]
+	if key == 'enter':
+		em.send_enter()
+		keypress = key
+	#PF1=1, PF24=24, PA1=25, PA3=27
+	elif key > 0 and key < 25: 
+		keypress = 'PF(' + str(key) + ')'
+		em.exec_command(keypress)
+	elif key > 25 and key < 28:
+		keypress = 'PA(' + str(key - 24) + ')'
+		em.exec_command(keypress)
+	response = update_screen(em,response)
+	trans = tn3270_Transaction(request,response,keypress,host)
 	history.append(trans)
 	return trans
 
@@ -224,33 +248,20 @@ class EmulatorIntermediate(EmulatorBase):
 		response = self.exec_command('Ascii()')
 		return response.data
 	
-# Set the emulator intelligently based on your platform
-if platform.system() == 'Darwin':
-	class Emulator(EmulatorIntermediate):
-		x3270_executable = '/Users/singe/manual-install/x3270-hack/x3270'
-		s3270_executable = 'MAC_Binaries/s3270'
-elif platform.system() == 'Linux':
-	class Emulator(EmulatorIntermediate):
-		x3270_executable = '/usr/bin/x3270' #comment this line if you do not wish to use x3270 on Linux
-		s3270_executable = '/usr/bin/s3270'
-elif platform.system() == 'Windows':
-	class Emulator(EmulatorIntermediate):
-		#x3270_executable = 'Windows_Binaries/wc3270.exe'
-		s3270_executable = 'Windows_Binaries/ws3270.exe'
-else:
-	logger('Your Platform:', platform.system(), 'is not supported at this time.',kind='err')
-	sys.exit(1)
-
-def getPos(em):
+def get_pos(em):
 	results = em.exec_command('Query(Cursor)')
 	row = int(results.data[0].split(' ')[0])
 	col = int(results.data[0].split(' ')[1])
 	return (row,col)
 
+# Interactive mode, will record transactions, and display hacker view companion
 def interactive(em,history):
 	key = ''
+	trans = ''
+	screen = ''
 	while key != getch.KEY_ESC:
 		key = getch()
+
 		if key == getch.KEY_UP: #Up
 			em.exec_command('Up()')
 		elif key == getch.KEY_DOWN: #Down
@@ -260,66 +271,142 @@ def interactive(em,history):
 		elif key == getch.KEY_RIGHT: #Right
 			em.exec_command('Right()')
 		elif key == getch.KEY_ENTER: #Enter
-			trans = executeTrans(em,history)
-			print trans.getResponse().colourbuffer
+			trans = exec_trans(em,history,'enter')
+			print trans.response.colorbuffer
+			logger('Enter entered',kind='info')
+		elif key == getch.KEY_CTRLr: #Ctrl-r print screen
+			screen = update_screen(em,screen)
+			print screen.colorbuffer
+			logger('Screen refreshed',kind='info')
+		elif key == getch.KEY_CTRLu: #Ctrl-u manually push transaction
+			screen = update_screen(em,screen)
+			hostinfo = em.exec_command('Query(Host)').data[0].split(' ')
+			host = hostinfo[1]+':'+hostinfo[2]
+			trans = tn3270_Transaction(history.last().response,screen,'manual',host)
+			history.append(trans)
+			print screen.colorbuffer
+			logger('Transaction added',kind='info')
 		elif key == getch.KEY_TAB: #Tab 9
 			em.exec_command('Tab()')
 		elif key == getch.KEY_BACKSPACE: #Backspace
 			em.exec_command('BackSpace()')
 		elif key == getch.KEY_DELETE: #Delete
 			em.exec_command('Delete()')
-		elif key == getch.KEY_CTRLc: #Ctrl-c
+		elif key == getch.KEY_CTRLc: #Ctrl-c Clear
 			em.exec_command('Clear()')
-		elif key == getch.KEY_CTRLq: #Ctrl-q
-			em.exec_command('#PA(1)')
-		elif key == getch.KEY_CTRLw: #Ctrl-w
-			em.exec_command('#PA(2)')
-		elif key == getch.KEY_CTRLe: #Ctrl-e
-			em.exec_command('#PA(3)')
+		elif key == getch.KEY_CTRLq: #Ctrl-q PA1
+			trans = exec_trans(em,history,25)
+			print trans.response.colorbuffer
+		elif key == getch.KEY_CTRLw: #Ctrl-w PA2
+			trans = exec_trans(em,history,26)
+			print trans.response.colorbuffer
+		elif key == getch.KEY_CTRLe: #Ctrl-e PA3
+			trans = exec_trans(em,history,27)
+			print trans.response.colorbuffer
 		elif key > 31 and key < 127: #Alphanumeric
 			safe_send(em, chr(key))
 		elif key == getch.KEY_F1:
-			em.exec_command('#PF(1)')
+			trans = exec_trans(em,history,1)
+			print trans.response.colorbuffer
 		elif key == getch.KEY_F2:
-			em.exec_command('#PF(2)')
+			trans = exec_trans(em,history,2)
+			print trans.response.colorbuffer
 		elif key == getch.KEY_F3:
-			em.exec_command('#PF(3)')
+			trans = exec_trans(em,history,3)
+			print trans.response.colorbuffer
 		elif key == getch.KEY_F4:
-			em.exec_command('#PF(4)')
+			trans = exec_trans(em,history,4)
+			print trans.response.colorbuffer
 		elif key == getch.KEY_F5:
-			em.exec_command('#PF(5)')
+			trans = exec_trans(em,history,5)
+			print trans.response.colorbuffer
 		elif key == getch.KEY_F6:
-			em.exec_command('#PF(6)')
+			trans = exec_trans(em,history,6)
+			print trans.response.colorbuffer
 		elif key == getch.KEY_F7:
-			em.exec_command('#PF(7)')
+			trans = exec_trans(em,history,7)
+			print trans.response.colorbuffer
 		elif key == getch.KEY_F8:
-			em.exec_command('#PF(8)')
+			trans = exec_trans(em,history,8)
+			print trans.response.colorbuffer
 		elif key == getch.KEY_F9:
-			em.exec_command('#PF(9)')
+			trans = exec_trans(em,history,9)
+			print trans.response.colorbuffer
 		elif key == getch.KEY_F10:
-			em.exec_command('#PF(10)')
+			trans = exec_trans(em,history,10)
+			print trans.response.colorbuffer
 		elif key == getch.KEY_F11:
-			em.exec_command('#PF(11)')
+			trans = exec_trans(em,history,11)
+			print trans.response.colorbuffer
 		elif key == getch.KEY_F12:
-			em.exec_command('#PF(12)')
+			trans = exec_trans(em,history,12)
+			print trans.response.colorbuffer
 		elif key == getch.KEY_AltF8:
-			em.exec_command('#PF(13)')
+			trans = exec_trans(em,history,13)
+			print trans.response.colorbuffer
 		elif key == getch.KEY_AltF9:
-			em.exec_command('#PF(14)')
+			trans = exec_trans(em,history,14)
+			print trans.response.colorbuffer
 		elif key == getch.KEY_AltF10:
-			em.exec_command('#PF(15)')
+			trans = exec_trans(em,history,15)
+			print trans.response.colorbuffer
 		elif key == getch.KEY_AltF11:
-			em.exec_command('#PF(16)')
+			trans = exec_trans(em,history,16)
+			print trans.response.colorbuffer
 		elif key == getch.KEY_AltF12:
-			em.exec_command('#PF(24)')
+			trans = exec_trans(em,history,24)
+			print trans.response.colorbuffer
 
 def connect_zOS(em, target):
 	logger('Connecting to ' + results.target,kind='info')
-	em.connect(target)
-
+	try:
+		em.connect(target)
+	except:
+		logger('Connection failure',kind='err')
+		sys.exit(1)
 	if not em.is_connected():
 		logger('Could not connect to ' + results.target + '. Aborting.',kind='err')
 		sys.exit(1)
+
+def list_trans(history):
+	print Fore.BLUE,"Transaction List\n",Fore.RESET
+	count = 0
+	for trans in history:
+		print Fore.RED,count,trans.timestamp,Fore.MAGENTA,trans.key,\
+					"\t",Fore.BLUE,trans.host,trans.comment,Fore.RESET
+		print "  Req : ",trans.request.stringbuffer[0]
+		print "  Resp: ",trans.response.stringbuffer[0]
+		print ""
+		count += 1
+
+def save_history(history,savefile):
+	if os.path.exists(savefile):
+		logger('Savefile exists, I won\'t overwrite yet',kind='err')
+		return 1 #Don't overwrite existing saves just yet
+	sav = open(savefile,'w')
+	pickle.dump(history, sav)
+	sav.close()
+	return 0
+
+def load_history(loadfile):
+	lod = open(loadfile,'r')
+	hist = pickle.load(lod)
+	lod.close()
+	return hist
+
+# Set the emulator intelligently based on your platform
+if platform.system() == 'Darwin':
+	class Emulator(EmulatorIntermediate):
+		x3270_executable = '/Users/singe/manual-install/x3270-hack/x3270'
+elif platform.system() == 'Linux':
+	class Emulator(EmulatorIntermediate):
+		x3270_executable = '/usr/bin/x3270' #comment this line if you do not wish to use x3270 on Linux
+elif platform.system() == 'Windows':
+	class Emulator(EmulatorIntermediate):
+		x3270_executable = 'Windows_Binaries/wc3270.exe'
+else:
+	logger('Your Platform:', platform.system(), 'is not supported at this time.',kind='err')
+	sys.exit(1)
 
 init() # initialise coloured output from colorama
 
@@ -327,30 +414,26 @@ init() # initialise coloured output from colorama
 parser = argparse.ArgumentParser(description='z/OS Mainframe Screenshotter', epilog='Get to it!')
 parser.add_argument('-t', '--target', help='Target IP address or Hostname and port: TARGET[:PORT] default port is 23', required=True, dest='target')
 parser.add_argument('-s', '--sleep', help='Seconds to sleep between actions (increase on slower systems). The default is 0 seconds.', default=0, type=float, dest='sleep')
-parser.add_argument('-m', '--moviemode', help='Enables ULTRA AWESOME Movie Mode. Watch the system get hacked in real time!', default=False, dest='movie_mode', action='store_true')
-parser.add_argument('-q', '--quiet', help='Only display found users / found passwords', default=False, dest='quiet', action='store_true')
+parser.add_argument('-q', '--quiet', help='Ssssh', default=False, dest='quiet', action='store_true')
 results = parser.parse_args()
 
 # Parse commandline arguments
-logger('z/OS Mainframe Screenshotter',kind='info')
+logger('Big Iron Recon & Pwnage (BIRP)',kind='info')
 logger('Target Acquired\t\t: ' + results.target,kind='info')
 logger('Slowdown is\t\t\t: ' + str(results.sleep),kind='info')
 logger('Attack platform\t\t: ' + platform.system(),kind='info')
 
-if results.movie_mode and not platform.system() == 'Windows':
-	logger('ULTRA Hacker Movie Mode\t: Enabled',kind='info')
-	#Enables Movie Mode which uses x3270 so it looks all movie like 'n shit
+if not platform.system() == 'Windows':
 	em = Emulator(visible=True)
-elif results.movie_mode and platform.system() == 'Windows':
-	logger('ULTRA Hacker Movie Mode not supported on Windows',kind='warn')
-	em = Emulator()
-else:
-	logger('ULTRA Hacker Movie Mode\t: Disabled',kind='info')
-	em = Emulator()
+elif platform.system() == 'Windows':
+	logger('x3270 not supported on Windows',kind='err')
+	sys.exit(1)
 if results.quiet:
 	logger('Quiet Mode Enabled\t: Shhhhhhhhh!',kind='warn')
 
 connect_zOS(em,results.target) #connect to the host
+hostinfo = em.exec_command('Query(Host)').data[0].split(' ')
+host = hostinfo[1]+':'+hostinfo[2]
 history = tn3270_History()
 
 embed() # Start IPython shell
