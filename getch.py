@@ -1,6 +1,19 @@
 import signal
 import platform
 
+'''
+	A very lightweight keypress handling library that won't try and take over
+	your console.
+
+	For the most part it a disgusting kludge based on the horrendously
+	inconsistent key events you get in different OS'es
+
+	I'm embarassed to put my name on this, but it works - dominic () sensepost.com (@singe)
+	Originally based on the recipe at http://code.activestate.com/recipes/134892/
+
+	todo: map keypresses on windows
+	todo: optimise decision tree on linux
+'''
 class TimeoutException(Exception): 
 	pass 
 
