@@ -33,16 +33,16 @@ class Screen:
 		self.rows = len(self.rawbuffer)
 		self.cols = len(self.rawbuffer[0])
 		#From x3270 defines
-		self.FA_PRINTABLE = 0xc0 #these make the character "printable"
-		self.FA_PROTECT = 0x20 #unprotected (0) / protected (1)
-		self.FA_NUMERIC = 0x10 #alphanumeric (0) /numeric (1)Skip?
-		self.FA_HIDDEN = 0x0c #display/selector pen detectable:
-		self.FA_INT_NORM_NSEL = 0x00 # 00 normal, non-detect
-		self.FA_INT_NORM_SEL = 0x04 # 01 normal, detectable
-		self.FA_INT_HIGH_SEL = 0x08 # 10 intensified, detectable
-		self.FA_INT_ZERO_NSEL = 0x0c # 11 nondisplay, non-detect
-		self.FA_RESERVED = 0x02 #must be 0
-		self.FA_MODIFY = 0x01 #modified (1)
+		self.__FA_PRINTABLE = 0xc0 #these make the character "printable"
+		self.__FA_PROTECT = 0x20 #unprotected (0) / protected (1)
+		self.__FA_NUMERIC = 0x10 #alphanumeric (0) /numeric (1)Skip?
+		self.__FA_HIDDEN = 0x0c #display/selector pen detectable:
+		self.__FA_INT_NORM_NSEL = 0x00 # 00 normal, non-detect
+		self.__FA_INT_NORM_SEL = 0x04 # 01 normal, detectable
+		self.__FA_INT_HIGH_SEL = 0x08 # 10 intensified, detectable
+		self.__FA_INT_ZERO_NSEL = 0x0c # 11 nondisplay, non-detect
+		self.__FA_RESERVED = 0x02 #must be 0
+		self.__FA_MODIFY = 0x01 #modified (1)
 		
 	@property
 	# Dump the hex without the field & formatting markers
@@ -84,30 +84,30 @@ class Screen:
 				if len(i) > 3 and i.find('SF(') >= 0:
 					attrib = int(i[3:5],16)
 					val = int(i[6:8],16)
-					if (val | self.FA_PROTECT | self.FA_HIDDEN | self.FA_NUMERIC) == val:
+					if (val | self.__FA_PROTECT | self.__FA_HIDDEN | self.__FA_NUMERIC) == val:
 						#hidden protected field - Green on Red
 						newline.append(Back.RED+Fore.GREEN+Style.NORMAL)
-					elif (val | self.FA_PROTECT | self.FA_NUMERIC) == val:
+					elif (val | self.__FA_PROTECT | self.__FA_NUMERIC) == val:
 						#protected & numeric/skip - Clear
 						newline.append(Back.RESET+Fore.RESET+Style.NORMAL)
-					elif (val | self.FA_PROTECT | self.FA_INT_HIGH_SEL) == val:
+					elif (val | self.__FA_PROTECT | self.__FA_INT_HIGH_SEL) == val:
 						#protected & intense  - White on Clear
 						newline.append(Back.RESET+Fore.WHITE+Style.BRIGHT)
-					elif (val | self.FA_PROTECT | self.FA_MODIFY) == val:
+					elif (val | self.__FA_PROTECT | self.__FA_MODIFY) == val:
 						#protected & modified? - Magenta on Red
 						#Fore will be overwritten by global modified check below
 						newline.append(Back.RED+Fore.MAGENTA+Style.NORMAL)
-					elif (val | self.FA_PROTECT) == val:
+					elif (val | self.__FA_PROTECT) == val:
 						#labels - Blue on Clear
 						newline.append(Back.RESET+Fore.BLUE+Style.NORMAL)
-					elif (val | self.FA_INT_HIGH_SEL) == val or (val | self.FA_INT_NORM_SEL) == val:
+					elif (val | self.__FA_INT_HIGH_SEL) == val or (val | self.__FA_INT_NORM_SEL) == val:
 						#normal input field - Red on Green
 						newline.append(Back.GREEN+Fore.RED+Style.NORMAL)
-					elif (val | self.FA_HIDDEN) == val or (val | self.FA_INT_NORM_NSEL) == val or (val | self.FA_INT_ZERO_NSEL) == val:
+					elif (val | self.__FA_HIDDEN) == val or (val | self.__FA_INT_NORM_NSEL) == val or (val | self.__FA_INT_ZERO_NSEL) == val:
 						#hidden unprotected input field - Blue on Green
 						newline.append(Back.GREEN+Fore.BLUE+Style.NORMAL)
 
-					if (val | self.FA_MODIFY) == val:
+					if (val | self.__FA_MODIFY) == val:
 						#modified text - Purple on Existing
 						newline.append(Fore.MAGENTA)
 
@@ -147,25 +147,25 @@ class Screen:
 					reserved = 0
 					modify = 0
 					rawstatus = i #store the raw status for later implementation of SA()
-					if (val | self.FA_PRINTABLE) == val:
+					if (val | self.__FA_PRINTABLE) == val:
 						printable = 1
-					if (val | self.FA_PROTECT ) == val:
+					if (val | self.__FA_PROTECT ) == val:
 						protected = 1
-					if (val | self.FA_NUMERIC ) == val:
+					if (val | self.__FA_NUMERIC ) == val:
 						numeric = 1
-					if (val | self.FA_HIDDEN) == val:
+					if (val | self.__FA_HIDDEN) == val:
 						hidden = 1
-					if (val | self.FA_INT_NORM_NSEL) == val:
+					if (val | self.__FA_INT_NORM_NSEL) == val:
 						normnsel = 1
-					if (val | self.FA_INT_NORM_SEL) == val:
+					if (val | self.__FA_INT_NORM_SEL) == val:
 						normsel = 1
-					if (val | self.FA_INT_HIGH_SEL) == val:
+					if (val | self.__FA_INT_HIGH_SEL) == val:
 						highsel = 1
-					if (val | self.FA_INT_ZERO_NSEL) == val:
+					if (val | self.__FA_INT_ZERO_NSEL) == val:
 						zeronsel = 1
-					if (val | self.FA_RESERVED) == val:
+					if (val | self.__FA_RESERVED) == val:
 						reserved = 1
-					if (val | self.FA_MODIFY) == val:
+					if (val | self.__FA_MODIFY) == val:
 						modify = 1
 
 					field = Field('', row, col, rawstatus, printable, protected, numeric, hidden, normnsel, normsel, highsel, zeronsel, reserved, modify)
@@ -174,23 +174,44 @@ class Screen:
 				# Add the character to the last field entity added
 				elif len(i) == 2:
 					contents = i.decode("hex")
-					field_list[len(field_list)-1].contents += contents
+					if len(field_list) > 0:
+						field_list[len(field_list)-1].contents += contents
 
 				col += 1
 			row += 1
 		return field_list
 
+	@property
 	def protected_fields(self):
-		return filter(lambda x: x.protected == 1, self.fields)
+		try:	
+			res = filter(lambda x: x.protected == 1, self.fields)
+		except IndexError:
+			res = []
+		return res
 
+	@property
 	def input_fields(self):
-		return filter(lambda x: x.protected == 0, self.fields)
+		try:	
+			res = filter(lambda x: x.protected == 0, self.fields)
+		except IndexError:
+			res = []
+		return res
 
+	@property
 	def hidden_fields(self):
-		return filter(lambda x: x.hidden == 1, self.fields)
+		try:	
+			res = filter(lambda x: x.hidden == 1, self.fields)
+		except IndexError:
+			res = []
+		return res
 
+	@property
 	def modified_fields(self):
-		return filter(lambda x: x.modify == 1, self.fields)
+		try:	
+			res = filter(lambda x: x.modify == 1, self.fields)
+		except IndexError:
+			res = []
+		return res
 
 # Object to hold an single tn3270 "transaction" i.e. request/response & timestamp
 class Transaction:

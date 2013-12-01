@@ -12,23 +12,87 @@ from colorama import Fore,Back,Style,init
 from IPython import embed
 from getch import getch
 import pickle
+from pprint import pprint
 
 #todo DOM search
 #todo build replay
 #todo menu
 
-def compare_screen(screen1,screen2,exact=False):
-	diffcount = 0
-	linecount = 0
-	for line in screen1.rawbuffer:
-		if screen1.rawbuffer[linecount] != screen2.rawbuffer[linecount]:
-			diffcount += 1
-			if exact:
-				return 0
-			elif diffcount > 2:
-				return 0 #More than two lines different they're different
-	return True #screens are the same
+# Menus are here because folds don't like them
+menu_list = "\nBIRP Menu\n\
+=========\n\n\
+1 - Interactive mode\n\
+2 - View transactions/screens/fields\n\
+3 - Python console\n\
+X - Quit\n\n\
+Selection: "
+
+interactive_help = "Interactive mode help\n\
+=====================\n\n\
+Hit ESC to exit interactive mode.\n\n\
+Most keys will be passed directly to x3270. Except:\n\
+Ctrl-c		- Clear\n\
+Ctrl-q/w/e	- PA1, PA2, PA3\n\
+Ctrl-r		- Re-print the markedup view of the current screen\n\
+Ctrl-u		- Manually push the last interaction as a transaction\n\
+Ctrl-p		- Drop to Python interactive shell\n\
+Ctrl-h		- This help\n\
+Alt-F8-11	- PF13-16\n\
+Alt-F12		- PF24\n\n\
+Hitting Enter, any of the PF/PA keys, or Ctrl-u will record a transaction."
+
+# Override some behaviour of py3270 library
+class EmulatorIntermediate(EmulatorBase):
+	def send_enter(self): #Allow a delay to be configured
+		self.exec_command('Enter')
+		if results.sleep > 0:
+			sleep(results.sleep)
+
+	def screen_get(self):
+		response = self.exec_command('Ascii()')
+		return response.data
+
+# Set the emulator intelligently based on your platform
+if platform.system() == 'Darwin':
+	class Emulator(EmulatorIntermediate):
+		x3270_executable = '/Users/singe/manual-install/x3270-hack/x3270'
+elif platform.system() == 'Linux':
+	class Emulator(EmulatorIntermediate):
+		x3270_executable = '/usr/bin/x3270'
+elif platform.system() == 'Windows':
+	class Emulator(EmulatorIntermediate):
+		x3270_executable = 'Windows_Binaries/wc3270.exe'
+else:
+	logger('Your Platform:', platform.system(), 'is not supported at this time.',kind='err')
+	sys.exit(1)
 	
+# Print output that can be surpressed by a CLI opt
+def logger(text, kind='clear', level=0):
+	if results.quiet and (kind == 'warn' or kind == 'info'):
+			return
+	else:
+		typdisp = ''
+		lvldisp = ''
+		if kind == 'warn': typdisp = '[!] '
+		elif kind == 'info': typdisp = '[+] '
+		elif kind == 'err': typdisp = '[#] '
+		elif kind == 'good': typdisp = '[*] '
+		if level == 1: lvldisp = "\t"
+		elif level == 2: lvldisp = "\t\t"
+		elif level == 3: lvldisp = "\t\t\t"
+		print lvldisp+typdisp+text
+
+def connect_zOS(em, target):
+	logger('Connecting to ' + results.target,kind='info')
+	try:
+		em.connect(target)
+	except:
+		logger('Connection failure',kind='err')
+		sys.exit(1)
+	if not em.is_connected():
+		logger('Could not connect to ' + results.target + '. Aborting.',kind='err')
+		sys.exit(1)
+
 # Send text without triggering field protection
 def safe_send(em, text):
 	for i in xrange(0,len(text)):
@@ -83,7 +147,7 @@ def exec_trans(em,history,key='enter'):
 	keypress = ''
 	hostinfo = em.exec_command('Query(Host)').data[0].split(' ')
 	host = hostinfo[1]+':'+hostinfo[2]
-	data = request.modified_fields()
+	data = request.modified_fields
 	if key == 'enter':
 		em.send_enter()
 		keypress = key
@@ -99,32 +163,17 @@ def exec_trans(em,history,key='enter'):
 	history.append(trans)
 	return trans
 
-# Print output that can be surpressed by a CLI opt
-def logger(text, kind='clear', level=0):
-	if results.quiet and (kind == 'warn' or kind == 'info'):
-			return
-	else:
-		typdisp = ''
-		lvldisp = ''
-		if kind == 'warn': typdisp = '[!] '
-		elif kind == 'info': typdisp = '[+] '
-		elif kind == 'err': typdisp = '[#] '
-		elif kind == 'good': typdisp = '[*] '
-		if level == 1: lvldisp = "\t"
-		elif level == 2: lvldisp = "\t\t"
-		elif level == 3: lvldisp = "\t\t\t"
-		print lvldisp+typdisp+text
-
-# Override some behaviour of py3270 library
-class EmulatorIntermediate(EmulatorBase):
-	def send_enter(self): #Allow a delay to be configured
-		self.exec_command('Enter')
-		if results.sleep > 0:
-			sleep(results.sleep)
-
-	def screen_get(self):
-		response = self.exec_command('Ascii()')
-		return response.data
+def compare_screen(screen1,screen2,exact=False):
+	diffcount = 0
+	linecount = 0
+	for line in screen1.rawbuffer:
+		if screen1.rawbuffer[linecount] != screen2.rawbuffer[linecount]:
+			diffcount += 1
+			if exact:
+				return 0
+			elif diffcount > 2:
+				return 0 #More than two lines different they're different
+	return True #screens are the same
 	
 def get_pos(em):
 	results = em.exec_command('Query(Cursor)')
@@ -138,6 +187,8 @@ def interactive(em,history):
 	trans = ''
 	screen = ''
 	data = ''
+	logger("Interative mode started! Hit ESC to exit",kind="info")
+	logger("Hit Ctrl-h for help. Start typing ...",kind="info")
 	while key != getch.KEY_ESC:
 		key = getch()
 
@@ -159,13 +210,17 @@ def interactive(em,history):
 			logger('Screen refreshed',kind='info')
 		elif key == getch.KEY_CTRLu: #Ctrl-u manually push transaction
 			screen = update_screen(em,screen)
-			data = screen.modified_fields()
+			data = screen.modified_fields
 			hostinfo = em.exec_command('Query(Host)').data[0].split(' ')
 			host = hostinfo[1]+':'+hostinfo[2]
 			trans = tn3270.Transaction(history.last().response,screen,data,'manual',host)
 			history.append(trans)
 			print screen.colorbuffer
 			logger('Transaction added',kind='info')
+		elif key == getch.KEY_CTRLh: #Ctrl-h help
+			print interactive_help
+		elif key == getch.KEY_CTRLp: #Ctrl-p python shell
+			embed()
 		elif key == getch.KEY_TAB: #Tab 9
 			em.exec_command('Tab()')
 		elif key == getch.KEY_BACKSPACE: #Backspace
@@ -237,31 +292,6 @@ def interactive(em,history):
 			trans = exec_trans(em,history,24)
 			print trans.response.colorbuffer
 
-def connect_zOS(em, target):
-	logger('Connecting to ' + results.target,kind='info')
-	try:
-		em.connect(target)
-	except:
-		logger('Connection failure',kind='err')
-		sys.exit(1)
-	if not em.is_connected():
-		logger('Could not connect to ' + results.target + '. Aborting.',kind='err')
-		sys.exit(1)
-
-def list_trans(history):
-	print Fore.BLUE,"Transaction List\n",Fore.RESET
-	print Fore.BLUE,"================\n",Fore.RESET
-	count = 0
-	for trans in history:
-		print Fore.BLUE,count,trans.timestamp,Fore.CYAN,trans.key,\
-					"\t",Fore.BLUE,trans.host,trans.comment,Fore.RESET
-		print "  Req : ",trans.request.stringbuffer[0]
-		for field in trans.data:
-			print "  Data: row:",field.row,"col:",field.col,"str:",Fore.RED,field.contents,Fore.RESET
-		print "  Resp: ",trans.response.stringbuffer[0]
-		print ""
-		count += 1
-
 def save_history(history,savefile):
 	if path.exists(savefile):
 		logger('Savefile exists, I won\'t overwrite yet',kind='err')
@@ -277,49 +307,120 @@ def load_history(loadfile):
 	lod.close()
 	return hist
 
-# Set the emulator intelligently based on your platform
-if platform.system() == 'Darwin':
-	class Emulator(EmulatorIntermediate):
-		x3270_executable = '/Users/singe/manual-install/x3270-hack/x3270'
-elif platform.system() == 'Linux':
-	class Emulator(EmulatorIntermediate):
-		x3270_executable = '/usr/bin/x3270' #comment this line if you do not wish to use x3270 on Linux
-elif platform.system() == 'Windows':
-	class Emulator(EmulatorIntermediate):
-		x3270_executable = 'Windows_Binaries/wc3270.exe'
-else:
-	logger('Your Platform:', platform.system(), 'is not supported at this time.',kind='err')
-	sys.exit(1)
+def print_trans(trans):
+	print "\n",Fore.BLUE,"View Transaction",Fore.RESET
+	print Fore.BLUE,"================",Fore.RESET,"\n"
+	print Fore.BLUE,trans.timestamp,Fore.CYAN,trans.key,\
+				"\t",Fore.BLUE,trans.host,trans.comment,Fore.RESET
+	print "  Req : ",trans.request.stringbuffer[0]
+	for field in trans.data:
+		print "  Data: row:",field.row,"col:",field.col,"str:",Fore.RED,field.contents,Fore.RESET
+	print "  Resp: ",trans.response.stringbuffer[0],'\n'
 
-init() # initialise coloured output from colorama
+def print_history(history):
+	print "\n",Fore.BLUE,"Transaction List",Fore.RESET
+	print Fore.BLUE,"================",Fore.RESET,"\n"
+	count = 0
+	for trans in history:
+		print Fore.BLUE,count,trans.timestamp,Fore.CYAN,trans.key,\
+					"\t",Fore.BLUE,trans.host,trans.comment,Fore.RESET
+		print "  Req : ",trans.request.stringbuffer[0]
+		for field in trans.data:
+			print "  Data: row:",field.row,"col:",field.col,"str:",Fore.RED,field.contents,Fore.RESET
+		print "  Resp: ",trans.response.stringbuffer[0],"\n"
+		count += 1
 
-# Define and fetch commandline arguments
-parser = argparse.ArgumentParser(description='z/OS Mainframe Screenshotter', epilog='Get to it!')
-parser.add_argument('-t', '--target', help='Target IP address or Hostname and port: TARGET[:PORT] default port is 23', required=True, dest='target')
-parser.add_argument('-s', '--sleep', help='Seconds to sleep between actions (increase on slower systems). The default is 0 seconds.', default=0, type=float, dest='sleep')
-parser.add_argument('-q', '--quiet', help='Ssssh', default=False, dest='quiet', action='store_true')
-results = parser.parse_args()
+def menu_screen(screen):
+	choice = ''
+	while choice.lower() != 'x':
+		print screen.colorbuffer
+		print "\n",Fore.CYAN,"Type 'f(ield)' to interrogate the screen's fields. Type x to go back.",\
+					Fore.RESET
+		choice = sys.stdin.readline().strip()
+		if choice.lower().count('f') > 0:
+			print Fore.BLUE,"View Fields",Fore.RESET
+			print Fore.BLUE,"===========",Fore.RESET,"\n"
+			pprint(screen.fields)
+			print Fore.RED,"Dropping into shell, check the",Fore.BLUE,"screen",Fore.RED,"object. Type quit() to return here.",\
+						Fore.RESET,"\n\n"
+			embed()
 
-# Parse commandline arguments
-logger('Big Iron Recon & Pwnage (BIRP)',kind='info')
-logger('Target Acquired\t\t: ' + results.target,kind='info')
-logger('Slowdown is\t\t\t: ' + str(results.sleep),kind='info')
-logger('Attack platform\t\t: ' + platform.system(),kind='info')
+def menu_trans(trans):
+	choice = ''
+	while choice.lower() != 'x':
+		print_trans(trans)
+		print Fore.CYAN,"Type 'req(uest)' or 'res(ponce)' to interrogate those screens. Type x to go back.",Fore.RESET
+		choice = sys.stdin.readline().strip()
+		if choice.lower().count('req') > 0:
+			menu_screen(trans.request)
+		elif choice.lower().count('res') > 0:
+			menu_screen(trans.response)
 
-if not platform.system() == 'Windows':
-	em = Emulator(visible=True)
-elif platform.system() == 'Windows':
-	logger('x3270 not supported on Windows',kind='err')
-	sys.exit(1)
-if results.quiet:
-	logger('Quiet Mode Enabled\t: Shhhhhhhhh!',kind='warn')
+def menu_history(history):
+	choice = ''
+	while choice.lower() != 'x':
+		print_history(history)
+		print Fore.CYAN,'Choose a transaction to view with the appropriate numeric key. Hit x, then enter to go back.',Fore.RESET
+		choice = sys.stdin.readline().strip()
+		if choice.isdigit():
+			key = int(choice)
+			if key >= 0 and key < len(history):
+				menu_trans(history[key])
 
-connect_zOS(em,results.target) #connect to the host
+def menu(em, history):
+	key = ''	
+	while key != getch.KEY_CTRLc:
+		print menu_list
+		key = getch()
+
+		if key == getch.KEY_1:
+			interactive(em,history)
+		elif key == getch.KEY_2:
+			menu_history(history)
+		elif key == getch.KEY_3:
+			embed()
+		elif key == getch.KEY_X or key == getch.KEY_x:
+			logger('Do big irons dream of electric paddocks? Goodnight.',kind='info')
+			sys.exit(0)
+
+# Just an excuse to wrap this away in a fold
+def prestartup():
+	init() # initialise coloured output from colorama
+	
+	# Define and fetch commandline arguments
+	parser = argparse.ArgumentParser(description='z/OS Mainframe Screenshotter', epilog='Get to it!')
+	parser.add_argument('-t', '--target', help='Target IP address or Hostname and port: TARGET[:PORT] default port is 23', required=True, dest='target')
+	parser.add_argument('-s', '--sleep', help='Seconds to sleep between actions (increase on slower systems). The default is 0 seconds.', default=0, type=float, dest='sleep')
+	parser.add_argument('-q', '--quiet', help='Ssssh', default=False, dest='quiet', action='store_true')
+	results = parser.parse_args()
+	return results
+
+# Just an excuse to wrap this away in a fold
+def startup():
+	# Parse commandline arguments
+	logger('Big Iron Recon & Pwnage (BIRP) by @singe',kind='info')
+	logger('Target Acquired\t\t: ' + results.target,kind='info')
+	logger('Slowdown is\t\t\t: ' + str(results.sleep),kind='info')
+	logger('Attack platform\t\t: ' + platform.system(),kind='info')
+	
+	if not platform.system() == 'Windows':
+		em = Emulator(visible=True)
+	elif platform.system() == 'Windows':
+		logger('x3270 not supported on Windows',kind='err')
+		sys.exit(1)
+	if results.quiet:
+		logger('Quiet Mode Enabled\t: Shhhhhhhhh!',kind='warn')
+
+	return em
+
+results = prestartup()
+em = startup()
+connect_zOS(em,results.target)
 hostinfo = em.exec_command('Query(Host)').data[0].split(' ')
 host = hostinfo[1]+':'+hostinfo[2]
 history = tn3270.History()
 
-embed() # Start IPython shell
+menu(em, history)
 
 # And we're done. Close the connection
 em.terminate()
