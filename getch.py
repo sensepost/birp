@@ -249,7 +249,7 @@ class _GetchMac:
 		self.KEY_CTRLf = 6
 		self.KEY_CTRLg = 7
 		self.KEY_CTRLh = 8
-		self.KEY_CTRLi = 9
+		self.KEY_CTRLi = 9 #Sigh, that's a tab
 		self.KEY_CTRLj = 10
 		self.KEY_CTRLk = 11
 		self.KEY_CTRLl = 12
