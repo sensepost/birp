@@ -77,8 +77,11 @@ class Screen:
 	def colorbuffer(self):
 		colbuf = list()
 		colbuf.append(Fore.RED) #Highlight unfield'ed text
+		counter = 0 #for line numbers
 		for line in self.rawbuffer:
 			newline = list()
+			newline.append('{:>2}'.format(counter)+' ') #line no
+			counter += 1
 			for i in line.split(' '):
 				# SF(c0=c8) is example of StartField markup
 				if len(i) > 3 and i.find('SF(') >= 0:
