@@ -366,21 +366,21 @@ def menu_save(history):
 
 def menu_screen(screen):
 	key = ''
-	while key != getch.KEY_x or getch.KEY_X:
+	while key != getch.KEY_x:
 		print screen.colorbuffer
-		logger(''.join(["\n",Fore.CYAN,"Type 'f' to view the screen's fields. Type 'x' to go back.",Fore.RESET]),kind='info')
+		logger(''.join([Fore.CYAN,"Type 'f' to view the screen's fields. Type 'x' to go back.",Fore.RESET]),kind='info')
 
 		key = getch()
-		if key == getch.KEY_f or getch.KEY_F:
+		if key == getch.KEY_f or key == getch.KEY_F:
 			print Fore.BLUE,"View Fields",Fore.RESET
 			print Fore.BLUE,"===========",Fore.RESET,"\n"
 			pprint(screen.fields)
-			logger(''.join([Fore.RED,"Dropping into shell, check the",Fore.BLUE,"screen",Fore.RED,"object. Type quit() to return here.",Fore.RESET,"\n\n"]),kind='info')
+			logger(''.join([Fore.RED,"Dropping into shell, check the",Fore.BLUE," screen ",Fore.RED,"object. Type quit() to return here.",Fore.RESET,"\n\n"]),kind='info')
 			embed()
 
 def menu_trans(trans):
 	key = ''
-	while key != getch.KEY_x or getch.KEY_X:
+	while key != getch.KEY_x:
 		print_trans(trans)
 		logger(''.join([Fore.CYAN,"Choose '1' to view the Request, and '2' to view the Response. Type 'x' to go back.",Fore.RESET]),kind='info')
 
