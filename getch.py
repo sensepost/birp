@@ -8,7 +8,7 @@ import platform
 	For the most part it a disgusting kludge based on the horrendously
 	inconsistent key events you get in different OS'es
 
-	I'm embarassed to put my name on this, but it works - dominic () sensepost.com (@singe)
+	I'm embarrassed to put my name on this, but it works - dominic () sensepost.com (@singe)
 	Originally based on the recipe at http://code.activestate.com/recipes/134892/
 
 	todo: map keypresses on windows
@@ -366,7 +366,7 @@ class _GetchMac:
 								break
 					signal.alarm(0)
 				except TimeoutException:
-					od = od
+					pass
 				finally:
 					signal.signal(signal.SIGALRM, old_handler) 
 		finally:
