@@ -40,7 +40,7 @@ class Screen:
 		self.__FA_INT_NORM_NSEL = 0x00 # 00 normal, non-detect
 		self.__FA_INT_NORM_SEL = 0x04 # 01 normal, detectable
 		self.__FA_INT_HIGH_SEL = 0x08 # 10 intensified, detectable
-		self.__FA_INT_ZERO_NSEL = 0x0c # 11 nondisplay, non-detect
+		self.__FA_INT_ZERO_NSEL = 0x0c # 11 nondisplay, non-detect, same as hidden
 		self.__FA_RESERVED = 0x02 #must be 0
 		self.__FA_MODIFY = 0x01 #modified (1)
 		
@@ -84,6 +84,30 @@ class Screen:
 				if len(i) > 3 and i.find('SF(') >= 0:
 					attrib = int(i[3:5],16)
 					val = int(i[6:8],16)
+
+					foreflag = False
+					backflag = False
+					styleflag = False
+					if (val | self.__FA_HIDDEN) == val:
+						newline.append(Back.RED)
+						backflag = True
+					if (val | self.__FA_MODIFY) == val:
+						newline.append(Fore.MAGENTA)
+						foreflag = True
+					if (val | self.__FA_PROTECT) != val:
+						newline.append(Back.GREEN)
+						backflag = True
+					if (val | self.__FA_INT_HIGH_SEL) == val:
+						newline.append(Style.BRIGHT)
+						styleflag = True
+					if not foreflag:
+						newline.append(Fore.RESET)
+					if not backflag:
+						newline.append(Back.RESET)
+					if not styleflag:
+						newline.append(Style.NORMAL)
+
+					''' Too complex and mis-displaying some stuff, I'll likely kill this
 					if (val | self.__FA_PROTECT | self.__FA_HIDDEN | self.__FA_NUMERIC) == val:
 						#hidden protected field - Green on Red
 						newline.append(Back.RED+Fore.GREEN+Style.NORMAL)
@@ -110,6 +134,7 @@ class Screen:
 					if (val | self.__FA_MODIFY) == val:
 						#modified text - Purple on Existing
 						newline.append(Fore.MAGENTA)
+					'''
 
 					newline.append(u'\u2219') #Field marker
 
@@ -118,7 +143,7 @@ class Screen:
 						newline.append(u"\u2400")
 					else:
 						newline.append(i.decode("hex"))
-			#newline.append(Fore.RESET+Back.RESET)
+				#newline.append(Fore.RESET+Back.RESET+Style.RESET_ALL)
 			colbuf.append(''.join(newline))
 		strcolbuf = '\n'.join(colbuf) + Fore.RESET + Back.RESET
 		return strcolbuf
