@@ -14,9 +14,9 @@ from getch import getch
 import pickle
 from pprint import pprint
 
+#todo colorbuffer color help
 #todo DOM search
 #todo build replay
-#todo menu
 
 # Menus are here because folds don't like them
 menu_list = "\nBIRP Menu\n\
@@ -24,6 +24,7 @@ menu_list = "\nBIRP Menu\n\
 1 - Interactive mode\n\
 2 - View transactions/screens/fields\n\
 3 - Python console\n\
+4 - Save history\n\
 X - Quit\n\n\
 Selection: "
 
@@ -55,7 +56,8 @@ class EmulatorIntermediate(EmulatorBase):
 # Set the emulator intelligently based on your platform
 if platform.system() == 'Darwin':
 	class Emulator(EmulatorIntermediate):
-		x3270_executable = '/Users/singe/manual-install/x3270-hack/x3270'
+		#x3270_executable = '/Users/singe/manual-install/x3270-hack/x3270'
+		x3270_executable = '/Users/singe/manual-install/x3270-hack/x3270-3.3-BIRP/x3270'
 elif platform.system() == 'Linux':
 	class Emulator(EmulatorIntermediate):
 		x3270_executable = '/usr/bin/x3270'
@@ -295,16 +297,27 @@ def interactive(em,history):
 def save_history(history,savefile):
 	if path.exists(savefile):
 		logger('Savefile exists, I won\'t overwrite yet',kind='err')
-		return 1 #Don't overwrite existing saves just yet
-	sav = open(savefile,'w')
-	pickle.dump(history, sav)
-	sav.close()
-	return 0
+		return False #Don't overwrite existing saves just yet
+	try:
+		sav = open(savefile,'w')
+		pickle.dump(history, sav)
+		sav.close()
+	except IOError:
+		logger('Saving didn\'t work.',kind='err')
+		return False
+	return True
 
 def load_history(loadfile):
-	lod = open(loadfile,'r')
-	hist = pickle.load(lod)
-	lod.close()
+	if not path.exists(loadfile):
+		logger("Couldn't find the history file" + loadfile + " bailing.",kind='err')
+		sys.exit(1)
+	try:
+		lod = open(loadfile,'r')
+		hist = pickle.load(lod)
+		lod.close()
+	except KeyError:
+		logger("That doesn't look like a BIRP file",kind='err')
+		sys.exit(1)
 	return hist
 
 def print_trans(trans):
@@ -330,37 +343,46 @@ def print_history(history):
 		print "  Resp: ",trans.response.stringbuffer[0],"\n"
 		count += 1
 
+def menu_save(history):
+	savefile = ''
+	logger(''.join([Fore.CYAN,'What file should I save to (must not exist): ',Fore.RESET]),kind='info')
+	savefile = sys.stdin.readline().strip()
+	if save_history(history,savefile):
+		logger(''.join([Fore.CYAN,'History saved to ',savefile,Fore.RESET]),kind='info')
+
 def menu_screen(screen):
-	choice = ''
-	while choice.lower() != 'x':
+	key = ''
+	while key != getch.KEY_x or getch.KEY_X:
 		print screen.colorbuffer
-		print "\n",Fore.CYAN,"Type 'f(ield)' to interrogate the screen's fields. Type x to go back.",\
-					Fore.RESET
-		choice = sys.stdin.readline().strip()
-		if choice.lower().count('f') > 0:
+		logger(''.join(["\n",Fore.CYAN,"Type 'f' to view the screen's fields. Type 'x' to go back.",Fore.RESET]),kind='info')
+
+		key = getch()
+		if key == getch.KEY_f or getch.KEY_F:
 			print Fore.BLUE,"View Fields",Fore.RESET
 			print Fore.BLUE,"===========",Fore.RESET,"\n"
 			pprint(screen.fields)
-			print Fore.RED,"Dropping into shell, check the",Fore.BLUE,"screen",Fore.RED,"object. Type quit() to return here.",\
-						Fore.RESET,"\n\n"
+			logger(''.join([Fore.RED,"Dropping into shell, check the",Fore.BLUE,"screen",Fore.RED,"object. Type quit() to return here.",Fore.RESET,"\n\n"]),kind='info')
 			embed()
 
 def menu_trans(trans):
-	choice = ''
-	while choice.lower() != 'x':
+	key = ''
+	while key != getch.KEY_x or getch.KEY_X:
 		print_trans(trans)
-		print Fore.CYAN,"Type 'req(uest)' or 'res(ponce)' to interrogate those screens. Type x to go back.",Fore.RESET
-		choice = sys.stdin.readline().strip()
-		if choice.lower().count('req') > 0:
+		logger(''.join([Fore.CYAN,"Choose '1' to view the Request, and '2' to view the Response. Type 'x' to go back.",Fore.RESET]),kind='info')
+
+		key = getch()
+		if key == getch.KEY_1:
 			menu_screen(trans.request)
-		elif choice.lower().count('res') > 0:
+		elif key == getch.KEY_2:
 			menu_screen(trans.response)
 
 def menu_history(history):
 	choice = ''
 	while choice.lower() != 'x':
 		print_history(history)
-		print Fore.CYAN,'Choose a transaction to view with the appropriate numeric key. Hit x, then enter to go back.',Fore.RESET
+		logger(''.join([Fore.CYAN,'Choose a transaction to view with the appropriate numeric key. Hit x, then enter to go back.',Fore.RESET]),kind='info')
+
+		#We'll have more than just single digits here, so readline
 		choice = sys.stdin.readline().strip()
 		if choice.isdigit():
 			key = int(choice)
@@ -379,19 +401,30 @@ def menu(em, history):
 			menu_history(history)
 		elif key == getch.KEY_3:
 			embed()
+		elif key == getch.KEY_4:
+			menu_save(history)
 		elif key == getch.KEY_X or key == getch.KEY_x:
 			logger('Do big irons dream of electric paddocks? Goodnight.',kind='info')
 			sys.exit(0)
 
 # Just an excuse to wrap this away in a fold
 def prestartup():
-	init() # initialise coloured output from colorama
+	init() #initialise coloured output from colorama
 	
 	# Define and fetch commandline arguments
-	parser = argparse.ArgumentParser(description='z/OS Mainframe Screenshotter', epilog='Get to it!')
-	parser.add_argument('-t', '--target', help='Target IP address or Hostname and port: TARGET[:PORT] default port is 23', required=True, dest='target')
-	parser.add_argument('-s', '--sleep', help='Seconds to sleep between actions (increase on slower systems). The default is 0 seconds.', default=0, type=float, dest='sleep')
-	parser.add_argument('-q', '--quiet', help='Ssssh', default=False, dest='quiet', action='store_true')
+	parser = argparse.ArgumentParser(\
+		description = 'Big Iron Recon & Pwnage (BIRP) by @singe',\
+		epilog = "It's easier than you think" )
+	parser.add_argument('-t', '--target',\
+		help='Target IP address or hostname & port: TARGET[:PORT]. The default port is 23.',\
+		required = True, dest = 'target')
+	parser.add_argument('-s', '--sleep',\
+		help='Seconds to sleep between actions (increase on slower systems). The default is 0 seconds.',\
+		default = 0, type = float, dest = 'sleep')
+	parser.add_argument('-l', '--load', help='Load a previously saved history file', default='',\
+		dest = 'loadfile', type = str)
+	parser.add_argument('-q', '--quiet', help="Ssssh! Don't print info text.",\
+		default = False, dest = 'quiet', action = 'store_true')
 	results = parser.parse_args()
 	return results
 
@@ -410,15 +443,19 @@ def startup():
 		sys.exit(1)
 	if results.quiet:
 		logger('Quiet Mode Enabled\t: Shhhhhhhhh!',kind='warn')
+	history = tn3270.History()
+	if results.loadfile:
+		logger('Load history from\t\t: ' + results.loadfile,kind='info')
+		history = load_history(results.loadfile)
 
-	return em
+	return (em,history)
 
 results = prestartup()
-em = startup()
+(em,history) = startup()
+
 connect_zOS(em,results.target)
 hostinfo = em.exec_command('Query(Host)').data[0].split(' ')
 host = hostinfo[1]+':'+hostinfo[2]
-history = tn3270.History()
 
 menu(em, history)
 
