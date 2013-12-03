@@ -96,16 +96,16 @@ class Screen:
 					elif (val | self.__FA_PROTECT | self.__FA_MODIFY) == val:
 						#protected & modified? - Magenta on Red
 						#Fore will be overwritten by global modified check below
-						newline.append(Back.RED+Fore.MAGENTA+Style.NORMAL)
+						newline.append(Back.YELLOW+Fore.MAGENTA+Style.NORMAL)
 					elif (val | self.__FA_PROTECT) == val:
 						#labels - Blue on Clear
 						newline.append(Back.RESET+Fore.BLUE+Style.NORMAL)
 					elif (val | self.__FA_INT_HIGH_SEL) == val or (val | self.__FA_INT_NORM_SEL) == val:
 						#normal input field - Red on Green
 						newline.append(Back.GREEN+Fore.RED+Style.NORMAL)
-					elif (val | self.__FA_HIDDEN) == val or (val | self.__FA_INT_NORM_NSEL) == val or (val | self.__FA_INT_ZERO_NSEL) == val:
-						#hidden unprotected input field - Blue on Green
-						newline.append(Back.GREEN+Fore.BLUE+Style.NORMAL)
+					elif (val | self.__FA_HIDDEN) == val:
+						#hidden unprotected input field - Red on Cyan
+						newline.append(Back.CYAN+Fore.RED+Style.NORMAL)
 
 					if (val | self.__FA_MODIFY) == val:
 						#modified text - Purple on Existing

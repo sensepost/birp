@@ -14,7 +14,6 @@ from getch import getch
 import pickle
 from pprint import pprint
 
-#todo colorbuffer color help
 #todo DOM search
 #todo build replay
 
@@ -28,7 +27,7 @@ menu_list = "\nBIRP Menu\n\
 X - Quit\n\n\
 Selection: "
 
-interactive_help = "Interactive mode help\n\
+interactive_help = "\nInteractive mode help\n\
 =====================\n\n\
 Hit ESC to exit interactive mode.\n\n\
 Most keys will be passed directly to x3270. Except:\n\
@@ -37,10 +36,23 @@ Ctrl-q/w/e	- PA1, PA2, PA3\n\
 Ctrl-r		- Re-print the markedup view of the current screen\n\
 Ctrl-u		- Manually push the last interaction as a transaction\n\
 Ctrl-p		- Drop to Python interactive shell\n\
+Ctrl-k		- Color key\n\
 Ctrl-h		- This help\n\
 Alt-F8-11	- PF13-16\n\
 Alt-F12		- PF24\n\n\
 Hitting Enter, any of the PF/PA keys, or Ctrl-u will record a transaction."
+
+color_key = "\nColor Key\n\
+=========\n\n\
+Hidden, Protected\t\t- " + Fore.GREEN + Back.RED + "Green text on Red fill" + Style.RESET_ALL + "\n\
+Protected, Numeric, Skip\t- Clear\n\
+Protected, Intense\t\t- " + Fore.WHITE + "White text" + Style.RESET_ALL + "\n\
+Protected, Modified\t\t- " + Fore.MAGENTA + Back.YELLOW + "Magenta text on Red fill" + Style.RESET_ALL + "\n\
+Protected Only\t\t\t- " + Fore.BLUE + "Blue text" + Style.RESET_ALL + "\n\
+Intense Only (normal input)\t- " + Fore.RED + Back.GREEN + "Red text on Green fill" + Style.RESET_ALL + "\n\
+Hidden, UNprotected\t\t- " + Fore.RED + Back.CYAN + "Red text on Cyan fill" + Style.RESET_ALL + "\n\
+Modified field\t\t\t- " + Fore.MAGENTA + "Magenta text" + Style.RESET_ALL + "\n\
+"
 
 # Override some behaviour of py3270 library
 class EmulatorIntermediate(EmulatorBase):
@@ -221,6 +233,8 @@ def interactive(em,history):
 			logger('Transaction added',kind='info')
 		elif key == getch.KEY_CTRLh: #Ctrl-h help
 			print interactive_help
+		elif key == getch.KEY_CTRLk: #Ctrl-k color key
+			print color_key
 		elif key == getch.KEY_CTRLp: #Ctrl-p python shell
 			embed()
 		elif key == getch.KEY_TAB: #Tab 9
@@ -456,7 +470,6 @@ results = prestartup()
 connect_zOS(em,results.target)
 hostinfo = em.exec_command('Query(Host)').data[0].split(' ')
 host = hostinfo[1]+':'+hostinfo[2]
-
 menu(em, history)
 
 # And we're done. Close the connection
