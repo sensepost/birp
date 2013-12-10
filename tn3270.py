@@ -110,35 +110,6 @@ class Screen:
 					if not styleflag:
 						newline.append(Style.NORMAL)
 
-					''' Too complex and mis-displaying some stuff, I'll likely kill this
-					if (val | self.__FA_PROTECT | self.__FA_HIDDEN | self.__FA_NUMERIC) == val:
-						#hidden protected field - Green on Red
-						newline.append(Back.RED+Fore.GREEN+Style.NORMAL)
-					elif (val | self.__FA_PROTECT | self.__FA_NUMERIC) == val:
-						#protected & numeric/skip - Clear
-						newline.append(Back.RESET+Fore.RESET+Style.NORMAL)
-					elif (val | self.__FA_PROTECT | self.__FA_INT_HIGH_SEL) == val:
-						#protected & intense  - White on Clear
-						newline.append(Back.RESET+Fore.WHITE+Style.BRIGHT)
-					elif (val | self.__FA_PROTECT | self.__FA_MODIFY) == val:
-						#protected & modified? - Magenta on Red
-						#Fore will be overwritten by global modified check below
-						newline.append(Back.YELLOW+Fore.MAGENTA+Style.NORMAL)
-					elif (val | self.__FA_PROTECT) == val:
-						#labels - Blue on Clear
-						newline.append(Back.RESET+Fore.BLUE+Style.NORMAL)
-					elif (val | self.__FA_INT_HIGH_SEL) == val or (val | self.__FA_INT_NORM_SEL) == val:
-						#normal input field - Red on Green
-						newline.append(Back.GREEN+Fore.RED+Style.NORMAL)
-					elif (val | self.__FA_HIDDEN) == val:
-						#hidden unprotected input field - Red on Cyan
-						newline.append(Back.CYAN+Fore.RED+Style.NORMAL)
-
-					if (val | self.__FA_MODIFY) == val:
-						#modified text - Purple on Existing
-						newline.append(Fore.MAGENTA)
-					'''
-
 					newline.append(u'\u2219') #Field marker
 
 				elif len(i) == 2:

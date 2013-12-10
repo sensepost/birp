@@ -42,16 +42,13 @@ Alt-F8-11	- PF13-16\n\
 Alt-F12		- PF24\n\n\
 Hitting Enter, any of the PF/PA keys, or Ctrl-u will record a transaction."
 
-color_key = "\nColor Key\n\
+color_key = u"\nColor Key\n\
 =========\n\n\
-Hidden, Protected\t\t- " + Fore.GREEN + Back.RED + "Green text on Red fill" + Style.RESET_ALL + "\n\
-Protected, Numeric, Skip\t- Clear\n\
-Protected, Intense\t\t- " + Fore.WHITE + "White text" + Style.RESET_ALL + "\n\
-Protected, Modified\t\t- " + Fore.MAGENTA + Back.YELLOW + "Magenta text on Red fill" + Style.RESET_ALL + "\n\
-Protected Only\t\t\t- " + Fore.BLUE + "Blue text" + Style.RESET_ALL + "\n\
-Intense Only (normal input)\t- " + Fore.RED + Back.GREEN + "Red text on Green fill" + Style.RESET_ALL + "\n\
-Hidden, UNprotected\t\t- " + Fore.RED + Back.CYAN + "Red text on Cyan fill" + Style.RESET_ALL + "\n\
-Modified field\t\t\t- " + Fore.MAGENTA + "Magenta text" + Style.RESET_ALL + "\n\
+\u2219\t\t\t- Start of field marker" + Style.RESET_ALL + "\n\
+Hidden Fields\t\t- " + Back.RED + "Red background" + Style.RESET_ALL + "\n\
+Modified Fields\t\t- " + Fore.MAGENTA + "Magenta text" + Style.RESET_ALL + "\n\
+Input Fields\t\t- " + Back.GREEN + "Green background" + Style.RESET_ALL + "\n\
+Intensified Fields\t- " + Style.BRIGHT + "Bright text" + Style.RESET_ALL + "\n\
 "
 
 # Override some behaviour of py3270 library
