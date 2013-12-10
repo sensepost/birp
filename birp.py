@@ -20,10 +20,10 @@ from pprint import pprint
 # Menus are here because folds don't like them
 menu_list = "\nBIRP Menu\n\
 =========\n\n\
-1 - Interactive mode\n\
-2 - View transactions/screens/fields\n\
-3 - Python console\n\
-4 - Save history\n\
+1 - Interactive Mode\n\
+2 - View History\n\
+3 - Python Console\n\
+4 - Save History\n\
 X - Quit\n\n\
 Selection: "
 
