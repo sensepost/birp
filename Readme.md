@@ -1,5 +1,6 @@
 Big Iron Recon & Pwnage (BIRP)
 ==============================
+by @singe
 
 BIRP is a tool that will assist in the security assessment of mainframe applications served over TN3270. Much like what BURP and other web application proxies do for web application assessments, BIRP aims to do the same for TN3270 application assessments. And, much like with web applications, being able to see and modify fields that the application developer assumed were neither visible nor modifiable allows security assumptions be bypassed.
 
@@ -27,4 +28,4 @@ Also, you can drop into python and examine the screen object directly.
 
 You can save your history to a file, and load it again later with the -l switch on the command line. You need to save it to a unique filename.
 
-By dominic@sensepost.com (@singe)
+By dominic () sensepost.com (@singe)
