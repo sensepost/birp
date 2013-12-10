@@ -28,4 +28,13 @@ Also, you can drop into python and examine the screen object directly.
 
 You can save your history to a file, and load it again later with the -l switch on the command line. You need to save it to a unique filename.
 
+Pre-requisites:
+---------------
+
+* Python libraries: py3270, colorama, IPython
+These can be installed with pip or easy_install
+
+* Hacked x3270 client. The patch is included. You can download the source at http://x3270.bgp.nu/download.html then cd to the x3270 directory once extracted, and patch -p1 < x3270-hack.patch
+You can use an unmodified client, but then you will not be able to edit protected fields.
+
 By dominic () sensepost.com (@singe)
