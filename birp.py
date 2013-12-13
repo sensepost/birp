@@ -427,8 +427,8 @@ def prestartup():
 		description = 'Big Iron Recon & Pwnage (BIRP) by @singe',\
 		epilog = "It's easier than you think" )
 	parser.add_argument('-t', '--target',\
-		help='Target IP address or hostname & port: TARGET[:PORT]. The default port is 23.',\
-		required = True, dest = 'target')
+		help='Target IP address or hostname & port: TARGET[:PORT]. The default port is 23. If you don\'t specify a target, you can manually specify it in the emulator',\
+		required = False, dest = 'target', default = False)
 	parser.add_argument('-s', '--sleep',\
 		help='Seconds to sleep between actions (increase on slower systems). The default is 0 seconds.',\
 		default = 0, type = float, dest = 'sleep')
@@ -443,7 +443,10 @@ def prestartup():
 def startup():
 	# Parse commandline arguments
 	logger('Big Iron Recon & Pwnage (BIRP) by @singe',kind='info')
-	logger('Target Acquired\t\t: ' + results.target,kind='info')
+	if not results.target:
+		logger('Manual target selection selected.',kind='info')
+	else:
+		logger('Target Acquired\t\t: ' + results.target,kind='info')
 	logger('Slowdown is\t\t\t: ' + str(results.sleep),kind='info')
 	logger('Attack platform\t\t: ' + platform.system(),kind='info')
 	
@@ -464,9 +467,10 @@ def startup():
 results = prestartup()
 (em,history) = startup()
 
-connect_zOS(em,results.target)
-hostinfo = em.exec_command('Query(Host)').data[0].split(' ')
-host = hostinfo[1]+':'+hostinfo[2]
+if not results.target:
+	connect_zOS(em,results.target)
+	hostinfo = em.exec_command('Query(Host)').data[0].split(' ')
+	host = hostinfo[1]+':'+hostinfo[2]
 menu(em, history)
 
 # And we're done. Close the connection
