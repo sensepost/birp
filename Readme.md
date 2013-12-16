@@ -31,6 +31,10 @@ Interactive mode is the heart of BIRPs functionality. It will pass keypresses an
 
 In interactive mode hitting Ctrl-h will print a help screen, Ctrl-k will display a color key, and ESC will exit back to the menu.
 
+BIRP tries to work out when a "transaction" has occurred, and record the before and after screen, as well as the modified fields. Certain keys are usually guaranteed to initiate a transaction such as Enter or any of the PF/PA keys. However, if for any reason the screen requires different keys to function, you can manually "push" a transaction with Ctrl-u right after performing the action. 
+
+Finally, if you want to have the screen re-printed hit Ctrl-r.
+
 * View History
 
 This will display the history of all transactions BIRP recorded, and allow them to be inspected. Specifically it provides access to the screen submitted, the fields that were modified in that screen (i.e. the data submitted) and the response.
@@ -39,9 +43,19 @@ For each screen, only the first row is displayed as context, but the full screen
 
 Also, you can drop into python and examine the screen object directly.
 
+* Search History
+
+Here you can perform a case sensitive search to find transactions with screens that contain certain text.
+
 * Save History
 
 You can save your history to a file, and load it again later with the -l switch on the command line. You need to save it to a unique filename.
+
+* Python Console
+
+The tool is not done yet, and right now there are lots of good reasons to be able to play with the objects directly. You can drop into an IPython embedded shell at various places. BIRP has a fairly useful set of python objects that you can interrogate, and I have made sure they have useful pythonic output (str/repr). The top object is the "history" which contains a list on "transactions". You can interrogate the last transaction added by referring to history.last(). Each transaction has a request and response screen object. So, for example, to get a list of all hidden fields in the last response from the server you could use: history.last().response.hidden_fields
+
+For further detail, it would be best to view the tn3270.py module.
 
 Pre-requisites:
 ---------------
@@ -52,5 +66,10 @@ These can be installed with pip or easy_install
 * Hacked x3270 client
 The patch is included. You can download the source at http://x3270.bgp.nu/download.html then cd to the x3270 directory once extracted, and patch -p1 < x3270-hack.patch
 You can use an unmodified client, but then you will not be able to edit protected fields.
+
+Design Choices
+--------------
+
+The key handling functionality I use is my own custom getch implementation. It is pretty horrible, but it works. I would love to use a more mature key handling implementation such as curses, pygame, urwid etc. but they all want to take over your screen too. Personally, I find the scroll back buffer to be invaluable in recording my activities or just being able to scroll up and remember what I did, so I did not want to loose that, hence this approach.
 
 By dominic () sensepost.com (@singe)
