@@ -64,8 +64,9 @@ Pre-requisites:
 These can be installed with pip or easy_install
 
 * Hacked x3270 client
-The patch is included. You can download the source at http://x3270.bgp.nu/download.html then cd to the x3270 directory once extracted, and patch -p1 < x3270-hack.patch
+The patches are included. You can download the source at http://x3270.bgp.nu/download.html then cd to the x3270 directory once extracted, and patch -p1 < x3270-hack-full.patch
 You can use an unmodified client, but then you will not be able to edit protected fields.
+The patch makes two changes, the first is to allow protected fields to be edited, the other is to make hidden fields visible (shown in reverse text highlightng). This functionality is split into two other patched if you would only like one or the other for some reason.
 
 Design Choices
 --------------
