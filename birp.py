@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 
 from py3270 import EmulatorBase,CommandError,FieldTruncateError
 import tn3270
@@ -14,16 +14,16 @@ from getch import getch
 import pickle
 from pprint import pprint
 
-#todo DOM search
-#todo build replay
+# todo build replay
 
 # Menus are here because folds don't like them
 menu_list = "\nBIRP Menu\n\
 =========\n\n\
 1 - Interactive Mode\n\
 2 - View History\n\
-3 - Python Console\n\
-4 - Save History\n\
+3 - Find Transaction\n\
+4 - Python Console\n\
+5 - Save History\n\
 X - Quit\n\n\
 Selection: "
 
@@ -53,7 +53,7 @@ Intensified Fields\t- " + Style.BRIGHT + "Bright text" + Style.RESET_ALL + "\n\
 
 # Override some behaviour of py3270 library
 class EmulatorIntermediate(EmulatorBase):
-	def send_enter(self): #Allow a delay to be configured
+	def send_enter(self): # Allow a delay to be configured
 		self.exec_command('Enter')
 		if results.sleep > 0:
 			sleep(results.sleep)
@@ -65,7 +65,7 @@ class EmulatorIntermediate(EmulatorBase):
 # Set the emulator intelligently based on your platform
 if platform.system() == 'Darwin':
 	class Emulator(EmulatorIntermediate):
-		#x3270_executable = '/Users/singe/manual-install/x3270-hack/x3270'
+		# x3270_executable = '/Users/singe/manual-install/x3270-hack/x3270'
 		x3270_executable = '/Users/singe/manual-install/x3270-hack/x3270-3.3-BIRP/x3270'
 elif platform.system() == 'Linux':
 	class Emulator(EmulatorIntermediate):
@@ -86,7 +86,7 @@ def logger(text, kind='clear', level=0):
 		lvldisp = ''
 		if kind == 'warn': typdisp = '[!] '
 		elif kind == 'info': typdisp = '[+] '
-		elif kind == 'err': typdisp = '[#] '
+		elif kind == 'err': typdisp = '[# ] '
 		elif kind == 'good': typdisp = '[*] '
 		if level == 1: lvldisp = "\t"
 		elif level == 2: lvldisp = "\t\t"
@@ -109,8 +109,8 @@ def safe_send(em, text):
 	for i in xrange(0,len(text)):
 		em.send_string(text[i])
 		if em.status.field_protection == 'P':
-			return False #We triggered field protection, stop
-	return True #Safe
+			return False # We triggered field protection, stop
+	return True # Safe
 
 # Fill fields in carefully, checking for triggering field protections
 def safe_fieldfill(em, ypos, xpos, tosend, length):
@@ -121,13 +121,13 @@ def safe_fieldfill(em, ypos, xpos, tosend, length):
 	try:
 		em.delete_field()
 		if safe_send(em, tosend):
-			return True #Hah, we win, take that mainframe
+			return True # Hah, we win, take that mainframe
 		else:
-			return False #we entered what we could, bailing
+			return False # we entered what we could, bailing
 	except CommandError, e:
 		# We hit an error, get mad
 		return False
-		#if str(e) == 'Keyboard locked':
+		# if str(e) == 'Keyboard locked':
 
 # Search the screen for text when we don't know exactly where it is, checking for read errors
 def find_response(em, response):
@@ -162,7 +162,7 @@ def exec_trans(em,history,key='enter'):
 	if key == 'enter':
 		em.send_enter()
 		keypress = key
-	#PF1=1, PF24=24, PA1=25, PA3=27
+	# PF1=1, PF24=24, PA1=25, PA3=27
 	elif key > 0 and key < 25: 
 		keypress = 'PF(' + str(key) + ')'
 		em.exec_command(keypress)
@@ -174,6 +174,7 @@ def exec_trans(em,history,key='enter'):
 	history.append(trans)
 	return trans
 
+# Compare two screens, allow a "fuzzy" match to account for time/terminal fields
 def compare_screen(screen1,screen2,exact=False):
 	diffcount = 0
 	linecount = 0
@@ -183,14 +184,68 @@ def compare_screen(screen1,screen2,exact=False):
 			if exact:
 				return 0
 			elif diffcount > 2:
-				return 0 #More than two lines different they're different
-	return True #screens are the same
+				return 0 # More than two lines different they're different
+	return True # screens are the same
 	
+# Get the current x3270 cursor position
 def get_pos(em):
 	results = em.exec_command('Query(Cursor)')
 	row = int(results.data[0].split(' ')[0])
 	col = int(results.data[0].split(' ')[1])
 	return (row,col)
+
+# Currently unused
+def find_first(history,text):
+	transid = 0
+	row = 0
+	rr = 0
+	col = 0
+	for trans in history:
+		row = 0
+		# Check the request
+		for line in trans.request.stringbuffer:
+			rr = 0
+			col = line.find(text)
+			if col >= 0:
+				return (transid,rr,row,col)
+			row += 1
+		row = 0
+		# Check the response
+		for line in trans.response.stringbuffer:
+			rr = 1
+			col = line.find(text)
+			if col >= 0:
+				return (transid,rr,row,col)
+			row += 1
+		transid += 1
+	return (-1,-1,-1,-1) # Not found
+
+# Find text within the transaction history
+def find_all(history,text):
+	result = list()
+	transid = 0
+	row = 0
+	rr = 0
+	col = 0
+	for trans in history:
+		row = 0
+		# Check the request
+		for line in trans.request.stringbuffer:
+			rr = 0
+			col = line.find(text)
+			if col >= 0:
+				result.append((transid,rr,row,col))
+			row += 1
+		row = 0
+		# Check the response
+		for line in trans.response.stringbuffer:
+			rr = 1
+			col = line.find(text)
+			if col >= 0:
+				result.append((transid,rr,row,col))
+			row += 1
+		transid += 1
+	return result
 
 # Interactive mode, will record transactions, and display hacker view companion
 def interactive(em,history):
@@ -203,23 +258,23 @@ def interactive(em,history):
 	while key != getch.KEY_ESC:
 		key = getch()
 
-		if key == getch.KEY_UP: #Up
+		if key == getch.KEY_UP: # Up
 			em.exec_command('Up()')
-		elif key == getch.KEY_DOWN: #Down
+		elif key == getch.KEY_DOWN: # Down
 			em.exec_command('Down()')
-		elif key == getch.KEY_LEFT: #Left
+		elif key == getch.KEY_LEFT: # Left
 			em.exec_command('Left()')
-		elif key == getch.KEY_RIGHT: #Right
+		elif key == getch.KEY_RIGHT: # Right
 			em.exec_command('Right()')
-		elif key == getch.KEY_ENTER: #Enter
+		elif key == getch.KEY_ENTER: # Enter
 			trans = exec_trans(em,history,'enter')
 			print trans.response.colorbuffer
 			logger('Enter entered',kind='info')
-		elif key == getch.KEY_CTRLr: #Ctrl-r print screen
+		elif key == getch.KEY_CTRLr: # Ctrl-r print screen
 			screen = update_screen(em,screen)
 			print screen.colorbuffer
 			logger('Screen refreshed',kind='info')
-		elif key == getch.KEY_CTRLu: #Ctrl-u manually push transaction
+		elif key == getch.KEY_CTRLu: # Ctrl-u manually push transaction
 			screen = update_screen(em,screen)
 			data = screen.modified_fields
 			hostinfo = em.exec_command('Query(Host)').data[0].split(' ')
@@ -228,30 +283,30 @@ def interactive(em,history):
 			history.append(trans)
 			print screen.colorbuffer
 			logger('Transaction added',kind='info')
-		elif key == getch.KEY_CTRLh: #Ctrl-h help
+		elif key == getch.KEY_CTRLh: # Ctrl-h help
 			print interactive_help
-		elif key == getch.KEY_CTRLk: #Ctrl-k color key
+		elif key == getch.KEY_CTRLk: # Ctrl-k color key
 			print color_key
-		elif key == getch.KEY_CTRLp: #Ctrl-p python shell
+		elif key == getch.KEY_CTRLp: # Ctrl-p python shell
 			embed()
-		elif key == getch.KEY_TAB: #Tab 9
+		elif key == getch.KEY_TAB: # Tab 9
 			em.exec_command('Tab()')
-		elif key == getch.KEY_BACKSPACE: #Backspace
+		elif key == getch.KEY_BACKSPACE: # Backspace
 			em.exec_command('BackSpace()')
-		elif key == getch.KEY_DELETE: #Delete
+		elif key == getch.KEY_DELETE: # Delete
 			em.exec_command('Delete()')
-		elif key == getch.KEY_CTRLc: #Ctrl-c Clear
+		elif key == getch.KEY_CTRLc: # Ctrl-c Clear
 			em.exec_command('Clear()')
-		elif key == getch.KEY_CTRLq: #Ctrl-q PA1
+		elif key == getch.KEY_CTRLq: # Ctrl-q PA1
 			trans = exec_trans(em,history,25)
 			print trans.response.colorbuffer
-		elif key == getch.KEY_CTRLw: #Ctrl-w PA2
+		elif key == getch.KEY_CTRLw: # Ctrl-w PA2
 			trans = exec_trans(em,history,26)
 			print trans.response.colorbuffer
-		elif key == getch.KEY_CTRLe: #Ctrl-e PA3
+		elif key == getch.KEY_CTRLe: # Ctrl-e PA3
 			trans = exec_trans(em,history,27)
 			print trans.response.colorbuffer
-		elif key > 31 and key < 127: #Alphanumeric
+		elif key > 31 and key < 127: # Alphanumeric
 			safe_send(em, chr(key))
 		elif key == getch.KEY_F1:
 			trans = exec_trans(em,history,1)
@@ -308,7 +363,7 @@ def interactive(em,history):
 def save_history(history,savefile):
 	if path.exists(savefile):
 		logger('Savefile exists, I won\'t overwrite yet',kind='err')
-		return False #Don't overwrite existing saves just yet
+		return False # Don't overwrite existing saves just yet
 	try:
 		sav = open(savefile,'w')
 		pickle.dump(history, sav)
@@ -331,11 +386,12 @@ def load_history(loadfile):
 		sys.exit(1)
 	return hist
 
-def print_trans(history,num):
+def print_trans(history,num,header):
 	trans = history[num]
-	print "\n",Fore.BLUE,"View Transaction",Fore.RESET
-	print Fore.BLUE,"================",Fore.RESET,"\n"
-	print Fore.BLUE,num,trans.timestamp,Fore.CYAN,trans.key,\
+	if header:
+		print "\n",Fore.BLUE,"View Transaction",Fore.RESET
+		print Fore.BLUE,"================",Fore.RESET
+	print "\n",Fore.BLUE,num,trans.timestamp,Fore.CYAN,trans.key,\
 				"\t",Fore.BLUE,trans.host,trans.comment,Fore.RESET
 	print "  Req : ",trans.request.stringbuffer[0]
 	for field in trans.data:
@@ -380,7 +436,7 @@ def menu_trans(history,num):
 	trans = history[num]
 	key = ''
 	while key != getch.KEY_x:
-		print_trans(history,num)
+		print_trans(history,num,True)
 		logger(''.join([Fore.CYAN,"Choose '1' to view the Request, and '2' to view the Response. Type 'j' to move to the next transaction, and 'k' to the previous. Type 'x' to go back.",Fore.RESET]),kind='info')
 
 		key = getch()
@@ -400,12 +456,30 @@ def menu_history(history):
 		print_history(history)
 		logger(''.join([Fore.CYAN,'Choose a transaction to view with the appropriate numeric key. Hit x, then enter to go back.',Fore.RESET]),kind='info')
 
-		#We'll have more than just single digits here, so readline
+		# We'll have more than just single digits here, so readline
 		choice = sys.stdin.readline().strip()
 		if choice.isdigit():
 			key = int(choice)
 			if key >= 0 and key < len(history):
 				menu_trans(history,key)
+
+def menu_find(history):
+	choice = ''
+	while choice.lower() != 'x':
+		logger(''.join([Fore.CYAN,'Type the text you would like to search for and hit enter. Hit x, then enter to go back.',Fore.RESET]),kind='info')
+
+		# We'll have more than just single digits here, so readline
+		choice = sys.stdin.readline().strip()
+		if choice.lower() == 'x': break
+		results = find_all(history,choice) # execute the search
+		for result in results: # print out the results, suppressing the header
+			print_trans(history,result[0],False)
+		logger(''.join([Fore.CYAN,'Choose a transaction to view with the appropriate numeric key. Hit x, then enter to go back.',Fore.RESET]),kind='info')
+		choice = sys.stdin.readline().strip()
+		if choice.isdigit():
+			key = int(choice)
+			if key >= 0 and key < len(history):
+				return menu_trans(history,key)
 
 def menu(em, history):
 	key = ''	
@@ -418,8 +492,10 @@ def menu(em, history):
 		elif key == getch.KEY_2:
 			menu_history(history)
 		elif key == getch.KEY_3:
-			embed()
+			menu_find(history)
 		elif key == getch.KEY_4:
+			embed()
+		elif key == getch.KEY_5:
 			menu_save(history)
 		elif key == getch.KEY_X or key == getch.KEY_x:
 			logger('Do big irons dream of electric paddocks? Goodnight.',kind='info')
@@ -427,7 +503,7 @@ def menu(em, history):
 
 # Just an excuse to wrap this away in a fold
 def prestartup():
-	init() #initialise coloured output from colorama
+	init() # initialise coloured output from colorama
 	
 	# Define and fetch commandline arguments
 	parser = argparse.ArgumentParser(\
