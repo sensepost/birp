@@ -1,4 +1,4 @@
-# !/usr/bin/env python
+#!/usr/bin/env python
 
 from py3270 import EmulatorBase,CommandError,FieldTruncateError
 import tn3270
@@ -65,8 +65,7 @@ class EmulatorIntermediate(EmulatorBase):
 # Set the emulator intelligently based on your platform
 if platform.system() == 'Darwin':
 	class Emulator(EmulatorIntermediate):
-		# x3270_executable = '/Users/singe/manual-install/x3270-hack/x3270'
-		x3270_executable = '/Users/singe/manual-install/x3270-hack/x3270-3.3-BIRP/x3270'
+		x3270_executable = './x3270'
 elif platform.system() == 'Linux':
 	class Emulator(EmulatorIntermediate):
 		x3270_executable = '/usr/bin/x3270'
@@ -479,7 +478,7 @@ def menu_find(history):
 		if choice.isdigit():
 			key = int(choice)
 			if key >= 0 and key < len(history):
-				return menu_trans(history,key)
+				menu_trans(history,key)
 
 def menu(em, history):
 	key = ''	
@@ -527,7 +526,7 @@ def startup():
 	# Parse commandline arguments
 	logger('Big Iron Recon & Pwnage (BIRP) by @singe',kind='info')
 	if not results.target:
-		logger('Manual target selection selected.',kind='info')
+		logger('Manual target selection chosen.',kind='info')
 	else:
 		logger('Target Acquired\t\t: ' + results.target,kind='info')
 	logger('Slowdown is\t\t\t: ' + str(results.sleep),kind='info')
