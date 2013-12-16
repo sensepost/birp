@@ -331,10 +331,11 @@ def load_history(loadfile):
 		sys.exit(1)
 	return hist
 
-def print_trans(trans):
+def print_trans(history,num):
+	trans = history[num]
 	print "\n",Fore.BLUE,"View Transaction",Fore.RESET
 	print Fore.BLUE,"================",Fore.RESET,"\n"
-	print Fore.BLUE,trans.timestamp,Fore.CYAN,trans.key,\
+	print Fore.BLUE,num,trans.timestamp,Fore.CYAN,trans.key,\
 				"\t",Fore.BLUE,trans.host,trans.comment,Fore.RESET
 	print "  Req : ",trans.request.stringbuffer[0]
 	for field in trans.data:
@@ -375,17 +376,23 @@ def menu_screen(screen):
 			logger(''.join([Fore.RED,"Dropping into shell, check the",Fore.BLUE," screen ",Fore.RED,"object. Type quit() to return here.",Fore.RESET,"\n\n"]),kind='info')
 			embed()
 
-def menu_trans(trans):
+def menu_trans(history,num):
+	trans = history[num]
 	key = ''
 	while key != getch.KEY_x:
-		print_trans(trans)
-		logger(''.join([Fore.CYAN,"Choose '1' to view the Request, and '2' to view the Response. Type 'x' to go back.",Fore.RESET]),kind='info')
+		print_trans(history,num)
+		logger(''.join([Fore.CYAN,"Choose '1' to view the Request, and '2' to view the Response. Type 'j' to move to the next transaction, and 'k' to the previous. Type 'x' to go back.",Fore.RESET]),kind='info')
 
 		key = getch()
 		if key == getch.KEY_1:
 			menu_screen(trans.request)
 		elif key == getch.KEY_2:
 			menu_screen(trans.response)
+		elif key == getch.KEY_j:
+			return menu_trans(history,num+1)
+		elif key == getch.KEY_k:
+			return menu_trans(history,num-1)
+	return 0
 
 def menu_history(history):
 	choice = ''
@@ -398,7 +405,7 @@ def menu_history(history):
 		if choice.isdigit():
 			key = int(choice)
 			if key >= 0 and key < len(history):
-				menu_trans(history[key])
+				menu_trans(history,key)
 
 def menu(em, history):
 	key = ''	
@@ -428,7 +435,7 @@ def prestartup():
 		epilog = "It's easier than you think" )
 	parser.add_argument('-t', '--target',\
 		help='Target IP address or hostname & port: TARGET[:PORT]. The default port is 23. If you don\'t specify a target, you can manually specify it in the emulator',\
-		required = False, dest = 'target', default = False)
+		required = False, dest = 'target', default = "")
 	parser.add_argument('-s', '--sleep',\
 		help='Seconds to sleep between actions (increase on slower systems). The default is 0 seconds.',\
 		default = 0, type = float, dest = 'sleep')
@@ -467,7 +474,7 @@ def startup():
 results = prestartup()
 (em,history) = startup()
 
-if not results.target:
+if results.target:
 	connect_zOS(em,results.target)
 	hostinfo = em.exec_command('Query(Host)').data[0].split(' ')
 	host = hostinfo[1]+':'+hostinfo[2]
