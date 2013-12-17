@@ -46,7 +46,7 @@ color_key = u"\nColor Key\n\
 =========\n\n\
 \u2219\t\t\t- Start of field marker" + Style.RESET_ALL + "\n\
 Hidden Fields\t\t- " + Back.RED + "Red background" + Style.RESET_ALL + "\n\
-Modified Fields\t\t- " + Fore.MAGENTA + "Magenta text" + Style.RESET_ALL + "\n\
+Modified Fields\t\t- " + Fore.YELLOW + "Yellow text" + Style.RESET_ALL + "\n\
 Input Fields\t\t- " + Back.GREEN + "Green background" + Style.RESET_ALL + "\n\
 Intensified Fields\t- " + Style.BRIGHT + "Bright text" + Style.RESET_ALL + "\n\
 "

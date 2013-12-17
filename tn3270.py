@@ -95,7 +95,7 @@ class Screen:
 						newline.append(Back.RED)
 						backflag = True
 					if (val | self.__FA_MODIFY) == val:
-						newline.append(Fore.MAGENTA)
+						newline.append(Fore.YELLOW)
 						foreflag = True
 					if (val | self.__FA_PROTECT) != val:
 						newline.append(Back.GREEN)
