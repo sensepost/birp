@@ -26,6 +26,9 @@ class Field:
 	def __str__(self):
 		return self.contents
 
+	def __len__(self):
+		return len(self.contents)
+
 # Object to hold a screen from x3270
 class Screen:
 	def __init__(self, rawbuff):
