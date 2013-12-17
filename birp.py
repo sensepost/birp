@@ -49,8 +49,8 @@ color_key = u"\nColor Key\n\
 Hidden Fields\t\t- " + Back.RED + "Red background" + Style.RESET_ALL + "\n\
 Modified Fields\t\t- " + Fore.YELLOW + "Yellow text" + Style.RESET_ALL + "\n\
 Input Fields\t\t- " + Back.GREEN + "Green background" + Style.RESET_ALL + "\n\
-Intensified Fields\t- " + Style.BRIGHT + "Bright text" + Style.RESET_ALL + "\n\
 "
+#Intensified Fields\t- " + Style.BRIGHT + "Bright text" + Style.RESET_ALL + "\n\
 
 # Override some behaviour of py3270 library
 class EmulatorIntermediate(EmulatorBase):

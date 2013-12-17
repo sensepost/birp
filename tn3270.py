@@ -99,13 +99,15 @@ class Screen:
 						backflag = True
 					if (val | self.__FA_MODIFY) == val:
 						newline.append(Fore.YELLOW)
+						newline.append(Style.BRIGHT)
 						foreflag = True
+						styleflag = True
 					if (val | self.__FA_PROTECT) != val:
 						newline.append(Back.GREEN)
 						backflag = True
-					if (val | self.__FA_INT_HIGH_SEL) == val:
-						newline.append(Style.BRIGHT)
-						styleflag = True
+					#if (val | self.__FA_INT_HIGH_SEL) == val:
+						#newline.append(Style.BRIGHT)
+						#styleflag = True
 					if not foreflag:
 						newline.append(Fore.RESET)
 					if not backflag:
