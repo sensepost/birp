@@ -14,8 +14,9 @@ from getch import getch
 import pickle
 from pprint import pprint
 
+# todo allow field marked edits
 # todo build replay
-# todo intruder functinality
+# todo intruder functionality
 
 # Menus are here because folds don't like them
 menu_list = "\nBIRP Menu\n\
@@ -436,6 +437,9 @@ def menu_screen(screen):
 			embed()
 
 def menu_trans(history,num):
+	if num >= len(history) or num < 0:
+		logger(''.join([Fore.CYAN,"Whoops, that transaction doesn't exist.",Fore.RESET]),kind='info')
+		return 1
 	trans = history[num]
 	key = ''
 	while key != getch.KEY_x:
