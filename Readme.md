@@ -73,4 +73,12 @@ Design Choices
 
 The key handling functionality I use is my own custom getch implementation. It is pretty horrible, but it works. I would love to use a more mature key handling implementation such as curses, pygame, urwid etc. but they all want to take over your screen too. Personally, I find the scroll back buffer to be invaluable in recording my activities or just being able to scroll up and remember what I did, so I did not want to loose that, hence this approach.
 
+Shouts
+------
+
+* Thanks to Soldier of Fortran (@mainframed) for the help figuring out this mainframe stuff.
+* Andreas Lindh (@addelindh) for the clever name of the tool.
+* Rogan Dawes for sitting opposite me for most of the writing the tool, always with helpful pointers.
+* An unnamed client who gave me the opportunity to test their mainframes and develop the tool.
+
 By dominic () sensepost.com (@singe)
