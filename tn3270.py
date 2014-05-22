@@ -53,7 +53,12 @@ class Screen:
 		plnbuf = list()
 		for line in self.rawbuffer:
 			splitline = line.split(' ')
-			plainline = [i for i in splitline if len(i) == 2]
+			plainline = []
+			for i in splitline:
+				if len(i) == 2: #Not a field marker
+					plainline.append(i)
+				else:
+					plainline.append('00') #Use a NULL instead of a field marker
 			plnbuf.append(plainline)
 		return plnbuf
 
