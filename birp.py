@@ -422,12 +422,14 @@ def menu_save(history):
 	if save_history(history,savefile):
 		logger(''.join([Fore.CYAN,'History saved to ',savefile,Fore.RESET]),kind='info')
 
-def menu_screen(screen):
+def menu_screen(transaction, reqres):
+	#If reqres is True, we show the request, if False, we show the response
+	if reqres: screen = transaction.request
+	else: screen = transaction.response
 	key = ''
+	print screen.colorbuffer
 	while key != getch.KEY_x:
-		print screen.colorbuffer
-		logger(''.join([Fore.CYAN,"Type 'f' to view the screen's fields. Type 'x' to go back.",Fore.RESET]),kind='info')
-
+		logger(''.join([Fore.CYAN,"Type 'f' to view the screen's fields or 'p' to view the un-markedup screen, or 'r' to switch between the Request/Response. Type 'x' to go back.",Fore.RESET]),kind='info')
 		key = getch()
 		if key == getch.KEY_f or key == getch.KEY_F:
 			print Fore.BLUE,"View Fields",Fore.RESET
@@ -435,6 +437,19 @@ def menu_screen(screen):
 			pprint(screen.fields)
 			logger(''.join([Fore.RED,"Dropping into shell, check the",Fore.BLUE," screen ",Fore.RED,"object. Type quit() to return here.",Fore.RESET,"\n\n"]),kind='info')
 			embed()
+		elif key == getch.KEY_p or key == getch.KEY_p:
+			print ''
+			for line in screen.stringbuffer:
+				print line
+		elif key == getch.KEY_r or key == getch.KEY_r:
+			reqres = not reqres
+			if reqres:
+				screen = transaction.request
+				print Fore.BLUE,'REQUEST',Fore.RESET
+			else:
+				screen = transaction.response
+				print Fore.BLUE,'RESPONSE',Fore.RESET
+			print screen.colorbuffer
 
 def menu_trans(history,num):
 	if num >= len(history) or num < 0:
@@ -448,9 +463,9 @@ def menu_trans(history,num):
 
 		key = getch()
 		if key == getch.KEY_1:
-			menu_screen(trans.request)
+			menu_screen(trans, reqres=True) #reqres True shows request, False shows response
 		elif key == getch.KEY_2:
-			menu_screen(trans.response)
+			menu_screen(trans, reqres=False)
 		elif key == getch.KEY_j:
 			return menu_trans(history,num+1)
 		elif key == getch.KEY_k:
