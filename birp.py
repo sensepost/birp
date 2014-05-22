@@ -427,7 +427,9 @@ def print_seq(history,start,stop):
 	for trans in history[start:stop+1]:
 		print '\n' * 100
 		print trans.request
-		sleep(2)
+		sleep(1)
+		print trans.response
+		sleep(1)
 
 def menu_screen(transaction, reqres):
 	#If reqres is True, we show the request, if False, we show the response
