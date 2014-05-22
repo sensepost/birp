@@ -425,9 +425,11 @@ def menu_save(history):
 def print_seq(history,start,stop):
 	print '\n' * 100 
 	for trans in history[start:stop+1]:
-		print '\n' * 100
+		print '\n' * 101
 		print trans.request
 		sleep(1)
+		print '\n' * 100
+		print Fore.RED,trans.key,Fore.RESET
 		print trans.response
 		sleep(1)
 
