@@ -422,6 +422,13 @@ def menu_save(history):
 	if save_history(history,savefile):
 		logger(''.join([Fore.CYAN,'History saved to ',savefile,Fore.RESET]),kind='info')
 
+def print_seq(history,start,stop):
+	print '\n' * 100 
+	for trans in history[start:stop+1]:
+		print '\n' * 100
+		print trans.request
+		sleep(2)
+
 def menu_screen(transaction, reqres):
 	#If reqres is True, we show the request, if False, we show the response
 	if reqres: screen = transaction.request
