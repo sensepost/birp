@@ -439,8 +439,7 @@ def menu_screen(transaction, reqres):
 			embed()
 		elif key == getch.KEY_p or key == getch.KEY_p:
 			print ''
-			for line in screen.stringbuffer:
-				print line
+			print screen
 		elif key == getch.KEY_r or key == getch.KEY_r:
 			reqres = not reqres
 			if reqres:
