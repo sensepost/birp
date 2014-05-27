@@ -88,7 +88,7 @@ def logger(text, kind='clear', level=0):
 		lvldisp = ''
 		if kind == 'warn': typdisp = '[!] '
 		elif kind == 'info': typdisp = '[+] '
-		elif kind == 'err': typdisp = '[# ] '
+		elif kind == 'err': typdisp = '[#] '
 		elif kind == 'good': typdisp = '[*] '
 		if level == 1: lvldisp = "\t"
 		elif level == 2: lvldisp = "\t\t"
@@ -251,11 +251,14 @@ def find_all(history,text):
 
 # Interactive mode, will record transactions, and display hacker view companion
 def interactive(em,history):
+	if not em.is_connected():
+		logger(Fore.RED+"Emulator not connected, interactive mode prevented."+Fore.RESET,kind="err")
+		return
 	key = ''
 	trans = ''
 	screen = ''
 	data = ''
-	logger("Interative mode started! Hit ESC to exit",kind="info")
+	logger("Interactive mode started! Hit ESC to exit",kind="info")
 	logger("Hit Ctrl-h for help. Start typing ...",kind="info")
 	while key != getch.KEY_ESC:
 		key = getch()
