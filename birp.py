@@ -38,6 +38,7 @@ Ctrl-q/w/e	- PA1, PA2, PA3\n\
 Ctrl-r		- Re-print the markedup view of the current screen\n\
 Ctrl-u		- Manually push the last interaction as a transaction\n\
 Ctrl-p		- Drop to Python interactive shell\n\
+Ctrl-s		- Create timestampe'd HTML file of the current screen\n\
 Ctrl-k		- Color key\n\
 Ctrl-h		- This help\n\
 Alt-F8-11	- PF13-16\n\
@@ -290,6 +291,9 @@ def interactive(em,history):
 			print color_key
 		elif key == getch.KEY_CTRLp: # Ctrl-p python shell
 			embed()
+		elif key == getch.KEY_CTRLs: # Ctrl-s screenshot
+			em.save_screen(str(trans.timestamp.date())+'_'+str(trans.timestamp.time())+'.html')
+			logger('Screenshot saved',kind='info')
 		elif key == getch.KEY_TAB: # Tab 9
 			em.exec_command('Tab()')
 		elif key == getch.KEY_BACKSPACE: # Backspace
