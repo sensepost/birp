@@ -13,6 +13,7 @@ from IPython import embed
 from getch import getch
 import pickle
 from pprint import pprint
+from encodings import utf_8
 
 # todo allow field marked edits
 # todo build replay
@@ -439,6 +440,14 @@ def print_seq(history,start,stop):
 		print Fore.RED,trans.key,Fore.RESET
 		print trans.response
 		sleep(1)
+
+def screentofile(screen,path):
+	f = open(path,'w')
+	g = open(path+'-brp','w')
+	f.write(str(screen))
+	g.write(utf_8.encode(screen.colorbuffer)[0])
+	f.close()
+	g.close()
 
 def menu_screen(transaction, reqres):
 	#If reqres is True, we show the request, if False, we show the response
