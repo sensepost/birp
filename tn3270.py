@@ -133,6 +133,42 @@ class Screen:
 		return strcolbuf
 
 	@property
+	# Display the screen as it would look in an emulator
+	# This looks at field markers only and ignores colours asked for by the host
+	# TODO: implement CF parsing
+	def emubuffer(self):
+		colbuf = list()
+		for line in self.rawbuffer:
+			newline = list()
+			for i in line.split(' '):
+				# SF(c0=c8) is example of StartField markup
+				if len(i) > 3 and i.find('SF(') >= 0:
+					attrib = int(i[3:5],16)
+					val = int(i[6:8],16)
+
+					modflag = False
+					hideflag = False
+					if (val | self.__FA_HIDDEN) == val:
+						hideflag = True
+					if (val | self.__FA_MODIFY) == val:
+						modflag = True
+
+					newline.append(u' ') #Field marker
+
+				elif len(i) == 2:
+					if i == '00':
+						newline.append(u' ')
+					elif hideflag:
+						newline.append(u' ')
+					elif modflag:
+						newline.append(u'_')
+					else:
+						newline.append(i.decode("hex"))
+			colbuf.append(''.join(newline))
+		strcolbuf = '\n'.join(colbuf)
+		return strcolbuf
+
+	@property
 	# Return a DOM of sorts with each field and it's characteristics
 	def fields(self):
 		field_list = list()
