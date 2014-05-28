@@ -441,10 +441,11 @@ def print_seq(history,start,stop):
 		print trans.response
 		sleep(1)
 
+# this will print two copies of the individual screen
 def screentofile(screen,path):
-	f = open(path,'w')
-	g = open(path+'-brp','w')
-	f.write(str(screen))
+	f = open(path+'.emu','w')
+	g = open(path+'.brp','w')
+	f.write(utf_8.encode(screen.emubuffer)[0])
 	g.write(utf_8.encode(screen.colorbuffer)[0])
 	f.close()
 	g.close()
@@ -456,7 +457,7 @@ def menu_screen(transaction, reqres):
 	key = ''
 	print screen.colorbuffer
 	while key != getch.KEY_x:
-		logger(''.join([Fore.CYAN,"Type 'f' to view the screen's fields or 'p' to view the un-markedup screen, or 'r' to switch between the Request/Response. Type 'x' to go back.",Fore.RESET]),kind='info')
+		logger(''.join([Fore.CYAN,"Type 'f' to view the screen's fields or 'p' to view the un-markedup screen, 'e' to view the screen as an emulator would, 'r' to switch between the Request/Response, or 's' to export a copy to a text file (.brp/.emu). Type 'x' to go back.",Fore.RESET]),kind='info')
 		key = getch()
 		if key == getch.KEY_f or key == getch.KEY_F:
 			print Fore.BLUE,"View Fields",Fore.RESET
@@ -465,8 +466,9 @@ def menu_screen(transaction, reqres):
 			logger(''.join([Fore.RED,"Dropping into shell, check the",Fore.BLUE," screen ",Fore.RED,"object. Type quit() to return here.",Fore.RESET,"\n\n"]),kind='info')
 			embed()
 		elif key == getch.KEY_p or key == getch.KEY_p:
-			print ''
-			print screen
+			print '\n',screen
+		elif key == getch.KEY_e or key == getch.KEY_e:
+			print '\n',screen.emubuffer
 		elif key == getch.KEY_r or key == getch.KEY_r:
 			reqres = not reqres
 			if reqres:
@@ -476,6 +478,9 @@ def menu_screen(transaction, reqres):
 				screen = transaction.response
 				print Fore.BLUE,'RESPONSE',Fore.RESET
 			print screen.colorbuffer
+		elif key == getch.KEY_s or key == getch.KEY_s:
+			filename = transaction.host+'_'+str(transaction.timestamp.date())+'_'+str(transaction.timestamp.time())
+			screentofile(screen, filename)
 
 def menu_trans(history,num):
 	if num >= len(history) or num < 0:
