@@ -146,22 +146,25 @@ class Screen:
 					attrib = int(i[3:5],16)
 					val = int(i[6:8],16)
 
+					newline.append(u' ') #Field marker
+
 					modflag = False
 					hideflag = False
+					if (val | self.__FA_PROTECT) != val:
+						modflag = True
+						newline.append(Back.WHITE)
+						newline.append(Fore.BLACK)
 					if (val | self.__FA_HIDDEN) == val:
 						hideflag = True
-					if (val | self.__FA_MODIFY) == val:
-						modflag = True
-
-					newline.append(u' ') #Field marker
+					if not modflag:
+						newline.append(Fore.RESET)
+						newline.append(Back.RESET)
 
 				elif len(i) == 2:
 					if i == '00':
 						newline.append(u' ')
 					elif hideflag:
 						newline.append(u' ')
-					elif modflag:
-						newline.append(u'_')
 					else:
 						newline.append(i.decode("hex"))
 			colbuf.append(''.join(newline))
