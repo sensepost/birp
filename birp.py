@@ -15,7 +15,15 @@ import pickle
 from pprint import pprint
 from encodings import utf_8
 
-# todo allow field marked edits
+# Big Iron Recon & Pwnage (BIRP) is a TN3270 z/OS application assessment tool.
+# Written by Dominic White (@singe) at SensePost
+# It's homepage is available at https://github.com/sensepost/birp
+
+# Big Iron Recon & Pwnage by SensePost is licensed under a Creative Commons
+# Attribution-ShareAlike 4.0 International License. Permissions beyond the
+# scope of this license may be available at http://sensepost.com/contact us/.
+
+# todo allow field marker edits
 # todo build replay
 # todo intruder functionality
 

@@ -82,3 +82,9 @@ Shouts
 * An unnamed client who gave me the opportunity to test their mainframes and develop the tool.
 
 By dominic () sensepost.com (@singe)
+
+License
+-------
+
+Big Iron Recon & Pwnage by SensePost is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License (http://creativecommons.org/licenses/by-sa/4.0/)
+Permissions beyond the scope of this license may be available at http://sensepost.com/contact us/.
