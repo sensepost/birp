@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
+from py3270wrapper import Emulator
 import tn3270
-from py3270wrapper import EmulatorIntermediate,Emulator
 import sys 
 import argparse
 import re
