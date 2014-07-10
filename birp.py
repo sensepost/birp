@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from py3270 import EmulatorBase,CommandError,FieldTruncateError
 import tn3270
+from py3270wrapper import EmulatorIntermediate,Emulator
 import sys 
 import argparse
 import re
@@ -63,31 +63,6 @@ Input Fields\t\t- " + Back.GREEN + "Green background" + Style.RESET_ALL + "\n\
 "
 #Intensified Fields\t- " + Style.BRIGHT + "Bright text" + Style.RESET_ALL + "\n\
 
-# Override some behaviour of py3270 library
-class EmulatorIntermediate(EmulatorBase):
-	def send_enter(self): # Allow a delay to be configured
-		self.exec_command('Enter')
-		if results.sleep > 0:
-			sleep(results.sleep)
-
-	def screen_get(self):
-		response = self.exec_command('Ascii()')
-		return response.data
-
-# Set the emulator intelligently based on your platform
-if platform.system() == 'Darwin':
-	class Emulator(EmulatorIntermediate):
-		x3270_executable = './x3270'
-elif platform.system() == 'Linux':
-	class Emulator(EmulatorIntermediate):
-		x3270_executable = '/usr/bin/x3270'
-elif platform.system() == 'Windows':
-	class Emulator(EmulatorIntermediate):
-		x3270_executable = 'Windows_Binaries/wc3270.exe'
-else:
-	logger('Your Platform:', platform.system(), 'is not supported at this time.',kind='err')
-	sys.exit(1)
-	
 # Print output that can be surpressed by a CLI opt
 def logger(text, kind='clear', level=0):
 	if results.quiet and (kind == 'warn' or kind == 'info'):
@@ -103,58 +78,6 @@ def logger(text, kind='clear', level=0):
 		elif level == 2: lvldisp = "\t\t"
 		elif level == 3: lvldisp = "\t\t\t"
 		print lvldisp+typdisp+text
-
-def connect_zOS(em, target):
-	logger('Connecting to ' + results.target,kind='info')
-	try:
-		em.connect(target)
-	except:
-		logger('Connection failure',kind='err')
-		sys.exit(1)
-	if not em.is_connected():
-		logger('Could not connect to ' + results.target + '. Aborting.',kind='err')
-		sys.exit(1)
-
-# Send text without triggering field protection
-def safe_send(em, text):
-	for i in xrange(0,len(text)):
-		em.send_string(text[i])
-		if em.status.field_protection == 'P':
-			return False # We triggered field protection, stop
-	return True # Safe
-
-# Fill fields in carefully, checking for triggering field protections
-def safe_fieldfill(em, ypos, xpos, tosend, length):
-	if length - len(tosend) < 0:
-		raise FieldTruncateError('length limit %d, but got "%s"' % (length, tosend))
-	if xpos is not None and ypos is not None:
-		em.move_to(ypos, xpos)
-	try:
-		em.delete_field()
-		if safe_send(em, tosend):
-			return True # Hah, we win, take that mainframe
-		else:
-			return False # we entered what we could, bailing
-	except CommandError, e:
-		# We hit an error, get mad
-		return False
-		# if str(e) == 'Keyboard locked':
-
-# Search the screen for text when we don't know exactly where it is, checking for read errors
-def find_response(em, response):
-	for rows in xrange(1,int(em.status.row_number)+1):
-		for cols in xrange(1,int(em.status.col_number)+1-len(response)):
-			try:
-				if em.string_found(rows, cols, response):
-					return True
-			except CommandError, e:
-				# We hit a read error, usually because the screen hasn't returned
-				# increasing the delay works
-				sleep(results.sleep)
-				results.sleep += 1
-				whine('Read error encountered, assuming host is slow, increasing delay by 1s to: ' + str(results.sleep),kind='warn')
-				return False
-	return False
 
 # Update a screen object with the latest x3270 screen	
 def update_screen(em,screen):
@@ -198,13 +121,6 @@ def compare_screen(screen1,screen2,exact=False):
 				return 0 # More than two lines different they're different
 	return True # screens are the same
 	
-# Get the current x3270 cursor position
-def get_pos(em):
-	results = em.exec_command('Query(Cursor)')
-	row = int(results.data[0].split(' ')[0])
-	col = int(results.data[0].split(' ')[1])
-	return (row,col)
-
 # Currently unused
 def find_first(history,text):
 	transid = 0
@@ -324,7 +240,7 @@ def interactive(em,history):
 			trans = exec_trans(em,history,27)
 			print trans.response.colorbuffer
 		elif key > 31 and key < 127: # Alphanumeric
-			safe_send(em, chr(key))
+			em.safe_send(chr(key))
 		elif key == getch.KEY_F1:
 			trans = exec_trans(em,history,1)
 			print trans.response.colorbuffer
@@ -595,7 +511,7 @@ def startup():
 	logger('Attack platform\t\t: ' + platform.system(),kind='info')
 	
 	if not platform.system() == 'Windows':
-		em = Emulator(visible=True)
+		em = Emulator(visible=True,delay=results.sleep)
 	elif platform.system() == 'Windows':
 		logger('x3270 not supported on Windows',kind='err')
 		sys.exit(1)
@@ -612,8 +528,17 @@ results = prestartup()
 (em,history) = startup()
 
 if results.target:
-	connect_zOS(em,results.target)
-	hostinfo = em.exec_command('Query(Host)').data[0].split(' ')
+	logger('Connecting to ' + results.target,kind='info')
+	try:
+		em.connect(results.target)
+	except:
+		logger('Connection failure',kind='err')
+		sys.exit(1)
+	if not em.is_connected():
+		logger('Could not connect to ' + results.target + '. Aborting.',kind='err')
+		sys.exit(1)
+
+	hostinfo = em.get_hostinfo()
 	host = hostinfo[1]+':'+hostinfo[2]
 menu(em, history)
 
