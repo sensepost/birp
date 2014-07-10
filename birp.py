@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from py3270wrapper import Emulator
+from py3270wrapper import WrappedEmulator
 import tn3270
 import sys 
 import argparse
@@ -88,6 +88,7 @@ def update_screen(em,screen):
 def exec_trans(em,history,key='enter'):
 	request = tn3270.Screen
 	response = tn3270.Screen
+	check = tn3270.Screen
 	request = update_screen(em,request)
 	keypress = ''
 	hostinfo = em.exec_command('Query(Host)').data[0].split(' ')
@@ -511,7 +512,7 @@ def startup():
 	logger('Attack platform\t\t: ' + platform.system(),kind='info')
 	
 	if not platform.system() == 'Windows':
-		em = Emulator(visible=True,delay=results.sleep)
+		em = WrappedEmulator(visible=True,delay=results.sleep)
 	elif platform.system() == 'Windows':
 		logger('x3270 not supported on Windows',kind='err')
 		sys.exit(1)

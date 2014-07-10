@@ -60,8 +60,8 @@ For further detail, it would be best to view the tn3270.py module.
 Pre-requisites:
 ---------------
 
-* Python libraries: py3270, colorama, IPython
-These can be installed with pip or easy_install
+* Python libraries: py3270 (v0.2.0), colorama, IPython
+These can be installed with pip or easy_install. The code has been updated to work with the new version of py3270, so make sure you upgrade your older versions.
 
 * Hacked x3270 client
 The patches are included. You can download the source at http://x3270.bgp.nu/download.html then cd to the x3270 directory once extracted, and patch -p1 < x3270-hack-full.patch
@@ -72,6 +72,8 @@ Design Choices
 --------------
 
 The key handling functionality I use is my own custom getch implementation. It is pretty horrible, but it works. I would love to use a more mature key handling implementation such as curses, pygame, urwid etc. but they all want to take over your screen too. Personally, I find the scroll back buffer to be invaluable in recording my activities or just being able to scroll up and remember what I did, so I did not want to loose that, hence this approach.
+
+I found py3270 pretty rough and ended up wrapping some of it. I've provided this as a separate wrapper that you can use in your own programs.
 
 Shouts
 ------

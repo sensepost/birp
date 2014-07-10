@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
-from py3270 import EmulatorBase,CommandError,FieldTruncateError
+from py3270 import Emulator,CommandError,FieldTruncateError,TerminatedError,WaitError,KeyboardStateError,FieldTruncateError,x3270App
 import platform
+from time import sleep
 
 # Override some behaviour of py3270 library
-class EmulatorIntermediate(EmulatorBase):
+class EmulatorIntermediate(Emulator):
 	def __init__(self, visible=True, delay=0):
-		EmulatorBase.__init__(self, visible)
+		Emulator.__init__(self, visible)
 		self.delay = delay
 
 	def send_enter(self): # Allow a delay to be configured
@@ -71,14 +72,17 @@ class EmulatorIntermediate(EmulatorBase):
 
 # Set the emulator intelligently based on your platform
 if platform.system() == 'Darwin':
-	class Emulator(EmulatorIntermediate):
-		x3270_executable = './x3270'
+	class WrappedEmulator(EmulatorIntermediate):
+		#x3270_executable = './x3270'
+		x3270App.executable = './x3270'
 elif platform.system() == 'Linux':
-	class Emulator(EmulatorIntermediate):
-		x3270_executable = './x3270'
+	class WrappedEmulator(EmulatorIntermediate):
+		#x3270_executable = './x3270'
+		x3270App.executable = './x3270'
 elif platform.system() == 'Windows':
-	class Emulator(EmulatorIntermediate):
-		x3270_executable = 'Windows_Binaries/wc3270.exe'
+	class WrappedEmulator(EmulatorIntermediate):
+		#x3270_executable = 'Windows_Binaries/wc3270.exe'
+		x3270App.executable = 'wc3270.exe'
 else:
 	logger('Your Platform:', platform.system(), 'is not supported at this time.',kind='err')
 	sys.exit(1)
