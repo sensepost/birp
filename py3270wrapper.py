@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from py3270 import Emulator,CommandError,FieldTruncateError,TerminatedError,WaitError,KeyboardStateError,FieldTruncateError,x3270App
+from py3270 import Emulator,CommandError,FieldTruncateError,TerminatedError,WaitError,KeyboardStateError,FieldTruncateError,x3270App,s3270App
 import platform
 from time import sleep
 
@@ -73,12 +73,12 @@ class EmulatorIntermediate(Emulator):
 # Set the emulator intelligently based on your platform
 if platform.system() == 'Darwin':
 	class WrappedEmulator(EmulatorIntermediate):
-		#x3270_executable = './x3270'
 		x3270App.executable = './x3270'
+		s3270App.executable = 's3270'
 elif platform.system() == 'Linux':
 	class WrappedEmulator(EmulatorIntermediate):
-		#x3270_executable = './x3270'
 		x3270App.executable = './x3270'
+		s3270App.executable = 's3270'
 elif platform.system() == 'Windows':
 	class WrappedEmulator(EmulatorIntermediate):
 		#x3270_executable = 'Windows_Binaries/wc3270.exe'
