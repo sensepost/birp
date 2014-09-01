@@ -1,6 +1,6 @@
 Big Iron Recon & Pwnage (BIRP)
 ==============================
-by @singe
+by @singe (Dominic White @ SensePost)
 
 Overview
 --------
