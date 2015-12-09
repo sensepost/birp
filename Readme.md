@@ -78,7 +78,7 @@ I found py3270 pretty rough and ended up wrapping some of it. I've provided this
 Shouts
 ------
 
-* Thanks to Soldier of Fortran (@mainframed) for the help figuring out this mainframe stuff.
+* Thanks to Soldier of Fortran (@mainframed767) for the help figuring out this mainframe stuff.
 * Andreas Lindh (@addelindh) for the clever name of the tool.
 * Rogan Dawes for sitting opposite me for most of the writing the tool, always with helpful pointers.
 * An unnamed client who gave me the opportunity to test their mainframes and develop the tool.
