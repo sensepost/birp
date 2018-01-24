@@ -104,6 +104,7 @@ def exec_trans(em,history,key='enter'):
 	elif key > 25 and key < 28:
 		keypress = 'PA(' + str(key - 24) + ')'
 		em.exec_command(keypress)
+	em.exec_command('Wait(1,3270Mode)') #Capture the whole 3270 screen
 	response = update_screen(em,response)
 	trans = tn3270.Transaction(request,response,data,keypress,host)
 	history.append(trans)
@@ -177,9 +178,6 @@ def find_all(history,text):
 
 # Interactive mode, will record transactions, and display hacker view companion
 def interactive(em,history):
-	if not em.is_connected():
-		logger(Fore.RED+"Emulator not connected, interactive mode prevented."+Fore.RESET,kind="err")
-		return
 	key = ''
 	trans = ''
 	screen = ''
@@ -187,6 +185,9 @@ def interactive(em,history):
 	logger("Interactive mode started! Hit ESC to exit",kind="info")
 	logger("Hit Ctrl-h for help. Start typing ...",kind="info")
 	while key != getch.KEY_ESC:
+		if not em.is_connected():
+			logger(Fore.RED+"Emulator not connected, interactive mode prevented."+Fore.RESET,kind="err")
+			return
 		key = getch()
 
 		if key == getch.KEY_UP: # Up

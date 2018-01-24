@@ -3,12 +3,18 @@
 from py3270 import Emulator,CommandError,FieldTruncateError,TerminatedError,WaitError,KeyboardStateError,FieldTruncateError,x3270App,s3270App
 import platform
 from time import sleep
+from sys import exit
+from os import path
 
 # Override some behaviour of py3270 library
 class EmulatorIntermediate(Emulator):
 	def __init__(self, visible=True, delay=0):
-		Emulator.__init__(self, visible)
-		self.delay = delay
+		try:
+			Emulator.__init__(self, visible)
+			self.delay = delay
+		except OSError, e:
+			print("Can't run x3270, are you sure it's in the right place? Actual error: "+str(e))
+			exit(1)
 
 	def send_enter(self): # Allow a delay to be configured
 		self.exec_command('Enter')
@@ -86,3 +92,6 @@ elif platform.system() == 'Windows':
 else:
 	logger('Your Platform:', platform.system(), 'is not supported at this time.',kind='err')
 	sys.exit(1)
+if not path.isfile(x3270App.executable):
+  print("Can't find the x3270 executable at "+x3270App.executable+" You can configure the location at the bottom of py3270wrapper.py")
+  exit(1)
