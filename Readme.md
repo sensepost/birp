@@ -60,13 +60,14 @@ For further detail, it would be best to view the tn3270.py module.
 Pre-requisites:
 ---------------
 
-* Python libraries: py3270 (v0.2.0), colorama, IPython
-These can be installed with pip or easy_install. The code has been updated to work with the new version of py3270, so make sure you upgrade your older versions.
+* Python libraries: py3270 (v0.3.4), colorama, IPython
+These can be installed with pip or easy_install.
+Until py3270 accepts this pull request (https://github.com/py3270/py3270/pull/13) use my py3270 library (https://github.com/singe/py3270).
 
-* Hacked x3270 client
-The patches are included. You can download the source at http://x3270.bgp.nu/download.html then cd to the x3270 directory once extracted, and patch -p1 < x3270-hack-full.patch
+* Hacked x3270 client (v3.6)
+The patches are included. You can download the source at http://x3270.bgp.nu/download.html then cd to the suite3270 directory once extracted, and patch -p1 < suite3270-full.patch
 You can use an unmodified client, but then you will not be able to edit protected fields.
-The patch makes two changes, the first is to allow protected fields to be edited, the other is to make hidden fields visible (shown in reverse text highlightng). This functionality is split into two other patched if you would only like one or the other for some reason.
+The patch makes two changes, the first is to allow protected fields to be edited, the other is to make hidden fields visible (shown in reverse text highlighting). This functionality is split into two other patched if you would only like one or the other for some reason.
 
 Design Choices
 --------------
