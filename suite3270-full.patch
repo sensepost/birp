@@ -1,8 +1,7 @@
-diff --git lib/3270/ctlr.c lib/3270/ctlr.c
-index d45beb9..38221b5 100644
---- lib/3270/ctlr.c
-+++ lib/3270/ctlr.c
-@@ -474,7 +474,7 @@ next_unprotected(int baddr0)
+diff -ur suite3270-3.6/Common/ctlr.c suite3270-3.6-mod/Common/ctlr.c
+--- suite3270-3.6/Common/ctlr.c	2017-12-30 02:48:19.000000000 +0000
++++ suite3270-3.6-mod/Common/ctlr.c	2018-01-24 10:16:01.000000000 +0000
+@@ -474,7 +474,7 @@
  		baddr = nbaddr;
  		INC_BA(nbaddr);
  		if (ea_buf[baddr].fa &&
@@ -11,7 +10,7 @@ index d45beb9..38221b5 100644
  		    !ea_buf[nbaddr].fa)
  			return nbaddr;
  	} while (nbaddr != baddr0);
-@@ -1171,7 +1171,7 @@ ctlr_erase_all_unprotected(void)
+@@ -1186,7 +1186,7 @@
  		f = false;
  		do {
  			fa = ea_buf[baddr].fa;
@@ -20,7 +19,7 @@ index d45beb9..38221b5 100644
  				mdt_clear(baddr);
  				do {
  					INC_BA(baddr);
-@@ -1183,12 +1183,12 @@ ctlr_erase_all_unprotected(void)
+@@ -1198,12 +1198,12 @@
  						ctlr_add(baddr, EBC_null, 0);
  					}
  				} while (!ea_buf[baddr].fa);
@@ -32,26 +31,26 @@ index d45beb9..38221b5 100644
 -			}
 +			//}
 +			//else {
-+			//	do {
-+			//		INC_BA(baddr);
-+			//	} while (!ea_buf[baddr].fa);
++				//do {
++					//INC_BA(baddr);
++				//} while (!ea_buf[baddr].fa);
 +			//}
  		} while (baddr != sbaddr);
  		if (!f)
  			cursor_move(0);
-@@ -1356,8 +1356,9 @@ ctlr_write(unsigned char buf[], int buflen, bool erase)
+@@ -1371,8 +1371,9 @@
  			 * of an unprotected field, simply advance one
  			 * position.
  			 */
 -			if (ea_buf[buffer_addr].fa &&
 -			    !FA_IS_PROTECTED(ea_buf[buffer_addr].fa)) {
-+			//if (ea_buf[buffer_addr].fa &&
-+			//    !FA_IS_PROTECTED(ea_buf[buffer_addr].fa)) {
 +			if (ea_buf[buffer_addr].fa) {
++			//if (ea_buf[buffer_addr].fa &&
++			 //   !FA_IS_PROTECTED(ea_buf[buffer_addr].fa)) {
  				INC_BA(buffer_addr);
  				last_zpt = false;
  				last_cmd = true;
-@@ -1519,7 +1520,8 @@ ctlr_write(unsigned char buf[], int buflen, bool erase)
+@@ -1534,7 +1535,8 @@
  			do {
  				if (ea_buf[buffer_addr].fa)
  					current_fa = ea_buf[buffer_addr].fa;
@@ -61,32 +60,61 @@ index d45beb9..38221b5 100644
  					ctlr_add(buffer_addr, EBC_null,
  					    CS_BASE);
  				}
-diff --git lib/3270/fprint_screen.c lib/3270/fprint_screen.c
-index 44b4910..ed59945 100644
---- lib/3270/fprint_screen.c
-+++ lib/3270/fprint_screen.c
-@@ -79,7 +79,8 @@ color_from_fa(unsigned char fa)
+diff -ur suite3270-3.6/Common/fprint_screen.c suite3270-3.6-mod/Common/fprint_screen.c
+--- suite3270-3.6/Common/fprint_screen.c	2017-12-30 02:48:19.000000000 +0000
++++ suite3270-3.6-mod/Common/fprint_screen.c	2018-01-24 12:33:06.000000000 +0000
+@@ -79,7 +79,8 @@
  		HOST_COLOR_BLUE,         /* protected */
  		HOST_COLOR_WHITE         /* protected, intensified */
  #       define DEFCOLOR_MAP(f) \
 -		((((f) & FA_PROTECT) >> 4) | (((f) & FA_INT_HIGH_SEL) >> 3))
-+			(((f) & FA_INT_HIGH_SEL) >> 3)
-+			//((((f) & FA_PROTECT) >> 4) | (((f) & FA_INT_HIGH_SEL) >> 3))
++		(((f) & FA_INT_HIGH_SEL) >> 3)
++		//((((f) & FA_PROTECT) >> 4) | (((f) & FA_INT_HIGH_SEL) >> 3))
  	};
  
  	if (appres.m3279)
-diff --git lib/3270/kybd.c lib/3270/kybd.c
-index 81aefe0..32da414 100644
---- lib/3270/kybd.c
-+++ lib/3270/kybd.c
-@@ -994,20 +994,20 @@ key_Character(unsigned ebc, bool with_ge, bool pasting)
+@@ -383,6 +384,7 @@
+ 	unsigned char fa = ea_buf[fa_addr].fa;
+ 	int fa_fg, current_fg;
+ 	int fa_bg, current_bg;
++  int fa_zero = 0;
+ 	bool fa_high, current_high;
+ 	bool fa_ital, current_ital;
+ 	bool mi;
+@@ -525,10 +527,18 @@
+ 			fa_ital = mi && FA_IS_MODIFIED(fa);
+ 		}
+ 		if (FA_IS_ZERO(fa)) {
+-			if (ctlr_dbcs_state(i) == DBCS_LEFT)
+-			    	uc = 0x3000;
+-			else
+-				uc = ' ';
++			//if (ctlr_dbcs_state(i) == DBCS_LEFT)
++			    	//uc = 0x3000;
++			//else
++				//uc = ' ';
++      if (fa_zero > 0) { //invert colours for hidden fields
++        fa_zero = fa_fg;
++        fa_fg = fa_bg;
++        fa_bg = fa_zero;
++        fa_zero = -1;
++      } else {
++        fa_zero = 1; //set the flag
++      }
+ 		} else {
+ 		    	/* Convert EBCDIC to Unicode. */
+ 			switch (ctlr_dbcs_state(i)) {
+diff -ur suite3270-3.6/Common/kybd.c suite3270-3.6-mod/Common/kybd.c
+--- suite3270-3.6/Common/kybd.c	2017-12-30 02:48:19.000000000 +0000
++++ suite3270-3.6-mod/Common/kybd.c	2018-01-24 12:35:15.000000000 +0000
+@@ -1004,20 +1004,20 @@
  	    auto_skip = false;
  	}
  
 -	if (ea_buf[baddr].fa || FA_IS_PROTECTED(fa)) {
 -	    if (!auto_skip) {
 +	//if (ea_buf[baddr].fa || FA_IS_PROTECTED(fa)) {
-+	//    if (!auto_skip) {
++	    //if (!auto_skip) {
  		/*
  		 * In overlay-paste mode, protected fields cause paste buffer
  		 * data to be dropped while moving the cursor right.
@@ -99,18 +127,18 @@ index 81aefe0..32da414 100644
 -		return false;
 -	    }
 -	}
-+	//	INC_BA(baddr);
-+	//	cursor_move(baddr);
-+	//	return true;
-+	//    } else {
-+	//	operator_error(KL_OERR_PROTECTED);
-+	//	return false;
-+	//    }
++		//INC_BA(baddr);
++		//cursor_move(baddr);
++		//return true;
++	    //} else {
++		//operator_error(KL_OERR_PROTECTED);
++		//return false;
++	    //}
 +	//}
  	if (appres.numeric_lock && FA_IS_NUMERIC(fa) &&
  	    !((ebc >= EBC_0 && ebc <= EBC_9) ||
  	      ebc == EBC_minus || ebc == EBC_period)) {
-@@ -1280,10 +1280,10 @@ key_WCharacter(unsigned char ebc_pair[])
+@@ -1290,10 +1290,10 @@
  	faddr = find_field_attribute(baddr);
  
  	/* Protected? */
@@ -119,13 +147,13 @@ index 81aefe0..32da414 100644
 -		return false;
 -	}
 +	//if (ea_buf[baddr].fa || FA_IS_PROTECTED(fa)) {
-+	//	operator_error(KL_OERR_PROTECTED);
-+	//	return false;
++		//operator_error(KL_OERR_PROTECTED);
++		//return false;
 +	//}
  
  	/* Numeric? */
  	if (appres.numeric_lock && FA_IS_NUMERIC(fa)) {
-@@ -1738,7 +1738,7 @@ BackTab_action(ia_t ia, unsigned argc, const char **argv)
+@@ -1733,7 +1733,7 @@
  	nbaddr = baddr;
  	INC_BA(nbaddr);
  	if (ea_buf[baddr].fa &&
@@ -134,7 +162,7 @@ index 81aefe0..32da414 100644
  	    !ea_buf[nbaddr].fa) {
  	    break;
  	}
-@@ -1951,10 +1951,10 @@ do_delete(void)
+@@ -1935,10 +1935,10 @@
  
  	/* Can't delete a field attribute. */
  	fa = get_field_attribute(baddr);
@@ -143,13 +171,26 @@ index 81aefe0..32da414 100644
 -		return false;
 -	}
 +	//if (FA_IS_PROTECTED(fa) || ea_buf[baddr].fa) {
-+	//	operator_error(KL_OERR_PROTECTED);
-+	//	return false;
++		//operator_error(KL_OERR_PROTECTED);
++		//return false;
 +	//}
  	if (ea_buf[baddr].cc == EBC_so || ea_buf[baddr].cc == EBC_si) {
  		/*
  		 * Can't delete SO or SI, unless it's adjacent to its
-@@ -2090,10 +2090,10 @@ do_erase(void)
+@@ -1948,9 +1948,9 @@
+ 		INC_BA(xaddr);
+ 		if (ea_buf[xaddr].cc == SOSI(ea_buf[baddr].cc)) {
+ 			ndel = 2;
+-		} else {
+-			operator_error(KL_OERR_PROTECTED);
+-			return false;
++		//} else {
++			//operator_error(KL_OERR_PROTECTED);
++			//return false;
+ 		}
+ 	} else if (IS_DBCS(ea_buf[baddr].db)) {
+ 		if (IS_RIGHT(ea_buf[baddr].db))
+@@ -2074,10 +2074,10 @@
  
  	baddr = cursor_addr;
  	faddr = find_field_attribute(baddr);
@@ -158,31 +199,41 @@ index 81aefe0..32da414 100644
 -		return;
 -	}
 +	//if (faddr == baddr || FA_IS_PROTECTED(ea_buf[baddr].fa)) {
-+	//	operator_error(KL_OERR_PROTECTED);
-+	//	return;
++		//operator_error(KL_OERR_PROTECTED);
++		//return;
 +	//}
  	if (baddr && faddr == baddr - 1)
  		return;
  	do_left();
-@@ -2275,7 +2275,7 @@ PreviousWord_action(ia_t ia, unsigned argc, const char **argv)
+@@ -2243,7 +2243,7 @@
      prot = FA_IS_PROTECTED(get_field_attribute(baddr));
  
      /* Skip to before this word, if in one now. */
 -    if (!prot) {
-+   // if (!prot) {
++    //if (!prot) {
  	c = ea_buf[baddr].cc;
  	while (!ea_buf[baddr].fa && c != EBC_space && c != EBC_null) {
  	    DEC_BA(baddr);
-@@ -2284,7 +2284,7 @@ PreviousWord_action(ia_t ia, unsigned argc, const char **argv)
+@@ -2252,7 +2252,7 @@
  	    }
  	    c = ea_buf[baddr].cc;
  	}
 -    }
-+   // }
++    //}
      baddr0 = baddr;
  
      /* Find the end of the preceding word. */
-@@ -2375,7 +2375,8 @@ nu_word(int baddr)
+@@ -2263,7 +2263,8 @@
+ 	    prot = FA_IS_PROTECTED(get_field_attribute(baddr));
+ 	    continue;
+ 	}
+-	if (!prot && c != EBC_space && c != EBC_null) {
++	//if (!prot && c != EBC_space && c != EBC_null) {
++	if (c != EBC_space && c != EBC_null) {
+ 	    break;
+ 	}
+ 	DEC_BA(baddr);
+@@ -2335,7 +2336,8 @@
  		c = ea_buf[baddr].cc;
  		if (ea_buf[baddr].fa)
  			prot = FA_IS_PROTECTED(ea_buf[baddr].fa);
@@ -192,7 +243,7 @@ index 81aefe0..32da414 100644
  			return baddr;
  		INC_BA(baddr);
  	} while (baddr != baddr0);
-@@ -2432,14 +2433,14 @@ NextWord_action(ia_t ia, unsigned argc, const char **argv)
+@@ -2392,14 +2394,14 @@
      }
  
      /* If not in an unprotected field, go to the next unprotected word. */
@@ -204,28 +255,28 @@ index 81aefe0..32da414 100644
 -	}
 -	return true;
 -    }
-+   // if (ea_buf[cursor_addr].fa ||
++    //if (ea_buf[cursor_addr].fa ||
 +	//FA_IS_PROTECTED(get_field_attribute(cursor_addr))) {
 +	//baddr = nu_word(cursor_addr);
 +	//if (baddr != -1) {
-+	//    cursor_move(baddr);
++	    //cursor_move(baddr);
 +	//}
 +	//return true;
-+   // }
++    //}
  
      /* If there's another word in this field, go to it. */
      baddr = nt_word(cursor_addr);
-@@ -2570,7 +2571,8 @@ Newline_action(ia_t ia, unsigned argc, const char **argv)
+@@ -2514,7 +2516,8 @@
      baddr = (baddr / COLS) * COLS;			/* 1st col */
      faddr = find_field_attribute(baddr);
      fa = ea_buf[faddr].fa;
 -    if (faddr != baddr && !FA_IS_PROTECTED(fa)) {
-+    ///if (faddr != baddr && !FA_IS_PROTECTED(fa)) {
-+	 if (faddr != baddr) {
++    //if (faddr != baddr && !FA_IS_PROTECTED(fa)) {
++    if (faddr != baddr) {
  	cursor_move(baddr);
      } else {
  	cursor_move(next_unprotected(baddr));
-@@ -2836,10 +2838,10 @@ EraseEOF_action(ia_t ia, unsigned argc, const char **argv)
+@@ -2777,10 +2780,10 @@
      }
      baddr = cursor_addr;
      fa = get_field_attribute(baddr);
@@ -236,20 +287,20 @@ index 81aefe0..32da414 100644
 +    //if (FA_IS_PROTECTED(fa) || ea_buf[baddr].fa) {
 +	//operator_error(KL_OERR_PROTECTED);
 +	//return false;
-+   // }
++    //}
      if (formatted) {	/* erase to next field attribute */
  	do {
  	    ctlr_add(baddr, EBC_null, 0);
-@@ -2904,7 +2906,7 @@ EraseInput_action(ia_t ia, unsigned argc, const char **argv)
+@@ -2842,7 +2845,7 @@
  	f = false;
  	do {
  	    fa = ea_buf[baddr].fa;
 -	    if (!FA_IS_PROTECTED(fa)) {
-+	   // if (!FA_IS_PROTECTED(fa)) {
++	    //if (!FA_IS_PROTECTED(fa)) {
  		mdt_clear(baddr);
  		do {
  		    INC_BA(baddr);
-@@ -2916,11 +2918,11 @@ EraseInput_action(ia_t ia, unsigned argc, const char **argv)
+@@ -2854,11 +2857,11 @@
  			ctlr_add(baddr, EBC_null, 0);
  		    }
  		} while (!ea_buf[baddr].fa);
@@ -260,13 +311,13 @@ index 81aefe0..32da414 100644
 -	    }
 +	    //} else {	/* skip protected */
 +		//do {
-+		//    INC_BA(baddr);
++		    //INC_BA(baddr);
 +		//} while (!ea_buf[baddr].fa);
-+	   // }
++	    //}
  	} while (baddr != sbaddr);
  	if (!f) {
  	    cursor_move(0);
-@@ -2971,10 +2973,10 @@ DeleteWord_action(ia_t ia, unsigned argc, const char **argv)
+@@ -2906,10 +2909,10 @@
      fa = get_field_attribute(baddr);
  
      /* Make sure we're on a modifiable field. */
@@ -274,14 +325,14 @@ index 81aefe0..32da414 100644
 -	operator_error(KL_OERR_PROTECTED);
 -	return false;
 -    }
-+   // if (FA_IS_PROTECTED(fa) || ea_buf[baddr].fa) {
++    //if (FA_IS_PROTECTED(fa) || ea_buf[baddr].fa) {
 +	//operator_error(KL_OERR_PROTECTED);
 +	//return false;
-+   //}
++    //}
  
      /* Backspace over any spaces to the left of the cursor. */
      for (;;) {
-@@ -3040,10 +3042,10 @@ DeleteField_action(ia_t ia, unsigned argc, const char **argv)
+@@ -2972,10 +2975,10 @@
  
      baddr = cursor_addr;
      fa = get_field_attribute(baddr);
@@ -289,27 +340,27 @@ index 81aefe0..32da414 100644
 -	operator_error(KL_OERR_PROTECTED);
 -	return false;
 -    }
-+   // if (FA_IS_PROTECTED(fa) || ea_buf[baddr].fa) {
++    //if (FA_IS_PROTECTED(fa) || ea_buf[baddr].fa) {
 +	//operator_error(KL_OERR_PROTECTED);
 +	//return false;
-+   // }
++    //}
      while (!ea_buf[baddr].fa) {
  	DEC_BA(baddr);
      }
-@@ -3160,9 +3162,9 @@ FieldEnd_action(ia_t ia, unsigned argc, const char **argv)
+@@ -3083,9 +3086,9 @@
      baddr = cursor_addr;
      faddr = find_field_attribute(baddr);
      fa = ea_buf[faddr].fa;
 -    if (faddr == baddr || FA_IS_PROTECTED(fa)) {
 -	return true;
 -    }
-+   // if (faddr == baddr || FA_IS_PROTECTED(fa)) {
++    //if (faddr == baddr || FA_IS_PROTECTED(fa)) {
 +	//return true;
-+   // }
++    //}
  
      baddr = faddr;
      while (true) {
-@@ -3444,11 +3446,11 @@ remargin(int lmargin)
+@@ -3367,11 +3370,11 @@
  		}
  		faddr = find_field_attribute(baddr);
  		fa = ea_buf[faddr].fa;
@@ -319,14 +370,14 @@ index 81aefe0..32da414 100644
 -				return false;
 -		}
 +		//if (faddr == baddr || FA_IS_PROTECTED(fa)) {
-+		//	baddr = next_unprotected(baddr);
-+		//	if (baddr <= b0)
-+		//		return false;
++			//baddr = next_unprotected(baddr);
++			//if (baddr <= b0)
++				//return false;
 +		//}
  	}
  
  	cursor_move(baddr);
-@@ -4058,27 +4060,27 @@ kybd_prime(void)
+@@ -3983,27 +3986,27 @@
  	}
  
  	fa = get_field_attribute(cursor_addr);
@@ -337,15 +388,15 @@ index 81aefe0..32da414 100644
  		 * next one.
  		 */
 -		baddr = next_unprotected(cursor_addr);
-+	//	baddr = next_unprotected(cursor_addr);
++		//baddr = next_unprotected(cursor_addr);
  
  		/* If there isn't any, give up. */
 -		if (!baddr) {
 -			return 0;
 -		}
-+	//	if (!baddr) {
-+	//		return 0;
-+	//	}
++		//if (!baddr) {
++			//return 0;
++		//}
  
  		/* Move the cursor there. */
 -	} else {
@@ -361,22 +412,21 @@ index 81aefe0..32da414 100644
  
  	/* Move the cursor to the beginning of the field. */
  	cursor_move(baddr);
-diff --git lib/3270/macros.c lib/3270/macros.c
-index 7cd1ab8..e05c96b 100644
---- lib/3270/macros.c
-+++ lib/3270/macros.c
-@@ -2205,8 +2205,8 @@ dump_range(int first, int len, bool in_ascii, struct ea *buf,
+diff -ur suite3270-3.6/Common/macros.c suite3270-3.6-mod/Common/macros.c
+--- suite3270-3.6/Common/macros.c	2017-12-30 02:48:19.000000000 +0000
++++ suite3270-3.6-mod/Common/macros.c	2018-01-24 10:47:01.000000000 +0000
+@@ -2289,8 +2289,8 @@
  	    if (buf[first + i].fa) {
  		is_zero = FA_IS_ZERO(buf[first + i].fa);
  		vb_appends(&r, " ");
 -	    } else if (is_zero) {
 -		vb_appends(&r, " ");
-+	   // } else if (is_zero) {
++	    //} else if (is_zero) {
 +		//vb_appends(&r, " ");
  	    } else if (IS_LEFT(ctlr_dbcs_state(first + i))) {
  		xlen = ebcdic_to_multibyte(
  			(buf[first + i].cc << 8) | buf[first + i + 1].cc,
-@@ -2611,11 +2611,11 @@ status_string(void)
+@@ -2725,11 +2725,11 @@
  	unsigned char fa;
  
  	fa = get_field_attribute(cursor_addr);
@@ -384,7 +434,7 @@ index 7cd1ab8..e05c96b 100644
 -	    prot_stat = 'P';
 -	} else {
 +	//if (FA_IS_PROTECTED(fa)) {
-+	//    prot_stat = 'P';
++	    //prot_stat = 'P';
 +	//} else {
  	    prot_stat = 'U';
 -	}
@@ -392,103 +442,128 @@ index 7cd1ab8..e05c96b 100644
      }
  
      if (CONNECTED) {
-diff --git x3270/screen.c x3270/screen.c
-index adbb4a9..ce2ab60 100644
---- x3270/screen.c
-+++ x3270/screen.c
-@@ -2424,9 +2424,9 @@ draw_fields(union sp *buffer, int first, int last)
- 			bool is_vc = false;
+diff -ur suite3270-3.6/x3270/screen.c suite3270-3.6-mod/x3270/screen.c
+--- suite3270-3.6/x3270/screen.c	2017-12-30 02:48:20.000000000 +0000
++++ suite3270-3.6-mod/x3270/screen.c	2018-01-24 12:28:02.000000000 +0000
+@@ -2803,9 +2803,9 @@
+ 	    bool is_vc = false;
  
- 			/* Find the right graphic rendition. */
--			if (zero) {
-+			//if (zero) {
- 			    	gr = 0;
--			} else {
-+			//} else {
- 				gr = sbp->gr;
- 				if (!gr)
- 					gr = field_ea->gr;
-@@ -2434,12 +2434,12 @@ draw_fields(union sp *buffer, int first, int last)
- 					any_blink = true;
- 				if (appres.highlight_bold && FA_IS_HIGH(fa))
- 					gr |= GR_INTENSIFY;
--			}
-+			//}
- 
- 			/* Find the right color. */
--			if (zero) {
--			    	e_color = fa_color(FA_INT_HIGH_SEL);
--			} else {
-+			//if (zero) {
-+			//    	e_color = fa_color(FA_INT_HIGH_SEL);
-+			//} else {
- 				if (sbp->fg)
- 					e_color = sbp->fg & COLOR_MASK;
- 				else if (appres.interactive.mono &&
-@@ -2452,16 +2452,20 @@ draw_fields(union sp *buffer, int first, int last)
- 					e_color = INVERT_COLOR(e_color);
- 					reverse = true;
- 				}
--			}
-+			//}
-+            if (zero) {
-+               e_color = INVERT_COLOR(e_color);
-+               reverse = True;
-+            }
- 			if (!appres.interactive.mono)
- 				b.bits.fg = e_color;
- 
- 			/* Find the right character and character set. */
- 			d = ctlr_dbcs_state(baddr);
--			if (zero) {
-+			//if (zero) {
- 				if (visible_control)
- 					b.bits.cc = EBC_space;
--			} else if (((!visible_control || c != EBC_null) &&
-+			if (((!visible_control || c != EBC_null) &&
- 				    (c != EBC_space || d != DBCS_NONE)) ||
- 			           (gr & (GR_REVERSE | GR_UNDERLINE)) ||
- 				   visible_control) {
-@@ -2736,13 +2740,13 @@ char_color(int baddr)
- 	/*
- 	 * For non-display fields, we ignore gr and fg.
- 	 */
--	if (FA_IS_ZERO(fa)) {
--		color = fa_color(fa);
--		if (appres.interactive.mono && SELECTED(baddr)) {
--			color = INVERT_COLOR(color);
--		}
--		return color;
--	}
-+	//if (FA_IS_ZERO(fa)) {
-+	//	color = fa_color(fa);
-+	//	if (appres.interactive.mono && SELECTED(baddr)) {
-+	//		color = INVERT_COLOR(color);
-+	//	}
-+	//	return color;
-+	//}
- 
- 	/*
- 	 * Find the color of the character or the field.
-@@ -2864,13 +2868,13 @@ redraw_char(int baddr, bool invert)
- 	if (d == DBCS_LEFT || d == DBCS_RIGHT)
- 		buffer[0].bits.cs = CS_DBCS;
- 	fa = ea_buf[faddr].fa;
--	if (FA_IS_ZERO(fa)) {
+ 	    /* Find the right graphic rendition. */
+-	    if (zero) {
 -		gr = 0;
--	} else {
-+	//if (FA_IS_ZERO(fa)) {
-+	//	gr = 0;
-+	//} else {
- 		gr = ea_buf[baddr].gr;
- 		if (!gr)
- 			gr = fa2ea(faddr)->gr;
+-	    } else {
++	    //if (zero) {
++		//gr = 0;
++	    //} else {
+ 		gr = sbp->gr;
+ 		if (!gr) {
+ 		    gr = field_ea->gr;
+@@ -2816,12 +2816,12 @@
+ 		if (highlight_bold && FA_IS_HIGH(fa)) {
+ 		    gr |= GR_INTENSIFY;
+ 		}
+-	    }
++	    //}
+ 
+ 	    /* Find the right color. */
+-	    if (zero) {
+-		e_color = fa_color(FA_INT_HIGH_SEL);
+-	    } else {
++	    //if (zero) {
++		//e_color = fa_color(FA_INT_HIGH_SEL);
++	    //} else {
+ 		if (sbp->fg) {
+ 		    e_color = sbp->fg & COLOR_MASK;
+ 		} else if (appres.interactive.mono && (gr & GR_INTENSIFY)) {
+@@ -2833,23 +2833,28 @@
+ 		    e_color = INVERT_COLOR(e_color);
+ 		    reverse = true;
+ 		}
+-	    }
++    if (zero) {
++		    e_color = INVERT_COLOR(e_color);
++		    reverse = true;
++    }
++	    //}
+ 	    if (!appres.interactive.mono) {
+ 		b.bits.fg = e_color;
+ 	    }
+ 
+ 	    /* Find the right character and character set. */
+ 	    d = ctlr_dbcs_state(baddr);
+-	    if (zero) {
+-		if (visible_control) {
+-		    b.bits.cc = EBC_space;
+-		} else if (CROSSABLE && CROSSED(baddr)) {
+-		    b.bits.cs = CS_APL;
+-		    b.bits.cc = map_crosshair(baddr);
+-		    b.bits.fg = CROSS_COLOR;
+-		    b.bits.gr = 0;
+-		}
+-	    } else if (((!visible_control || c != EBC_null) &&
++	    //if (zero) {
++		//if (visible_control) {
++		    //b.bits.cc = EBC_space;
++		//} else if (CROSSABLE && CROSSED(baddr)) {
++		    //b.bits.cs = CS_APL;
++		    //b.bits.cc = map_crosshair(baddr);
++		    //b.bits.fg = CROSS_COLOR;
++		    //b.bits.gr = 0;
++		//}
++	    //} else if (((!visible_control || c != EBC_null) &&
++	    if (((!visible_control || c != EBC_null) &&
+ 			(c != EBC_space || d != DBCS_NONE)) ||
+ 		       (gr & (GR_REVERSE | GR_UNDERLINE)) ||
+ 		       visible_control) {
+@@ -3137,13 +3142,13 @@
+     /*
+      * For non-display fields, we ignore gr and fg.
+      */
+-    if (FA_IS_ZERO(fa)) {
+-	color = fa_color(fa);
+-	if (appres.interactive.mono && SELECTED(baddr)) {
+-	    color = INVERT_COLOR(color);
 -	}
+-	return color;
+-    }
++    //if (FA_IS_ZERO(fa)) {
++	//color = fa_color(fa);
++	//if (appres.interactive.mono && SELECTED(baddr)) {
++	    //color = INVERT_COLOR(color);
 +	//}
- 	if (ea_buf[baddr].fa) {
- 		if (!visible_control)
- 			blank_it = 1;
-@@ -3541,11 +3545,11 @@ fa_color(unsigned char fa)
++	//return color;
++    //}
+ 
+     /*
+      * Find the color of the character or the field.
+@@ -3273,20 +3278,20 @@
+ 	buffer[0].bits.cs = CS_DBCS;
+     }
+     fa = ea_buf[faddr].fa;
+-    if (FA_IS_ZERO(fa)) {
+-	gr = 0;
+-    } else {
++    //if (FA_IS_ZERO(fa)) {
++	//gr = 0;
++    //} else {
+ 	gr = ea_buf[baddr].gr;
+ 	if (!gr) {
+ 	    gr = fa2ea(faddr)->gr;
+ 	}
+-    }
++    //}
+     if (ea_buf[baddr].fa) {
+ 	if (!visible_control) {
+ 	    blank_it = 1;
+ 	}
+-    } else if (FA_IS_ZERO(fa)) {
+-	blank_it = 1;
++    //} else if (FA_IS_ZERO(fa)) {
++	//blank_it = 1;
+     } else if (text_blinkers_exist && !text_blinking_on) {
+ 	if (gr & GR_BLINK) {
+ 	    blank_it = 1;
+@@ -3965,11 +3970,11 @@
  	/*
  	 * Color indices are the intensity bits (0 through 2)
  	 */
@@ -496,7 +571,7 @@ index adbb4a9..ce2ab60 100644
 -	    return GC_NONDEFAULT | FA_INT_NORM_SEL;
 -	} else {
 +	//if (FA_IS_ZERO(fa) || (appres.modified_sel && FA_IS_MODIFIED(fa))) {
-+	//    return GC_NONDEFAULT | FA_INT_NORM_SEL;
++	    //return GC_NONDEFAULT | FA_INT_NORM_SEL;
 +	//} else {
  	    return GC_NONDEFAULT | (fa & 0x0c);
 -	}
@@ -504,11 +579,10 @@ index adbb4a9..ce2ab60 100644
      }
  }
  
-diff --git x3270/select.c x3270/select.c
-index 4753e0c..192eaf0 100644
---- x3270/select.c
-+++ x3270/select.c
-@@ -235,18 +235,18 @@ select_word(int baddr, Time t)
+diff -ur suite3270-3.6/x3270/select.c suite3270-3.6-mod/x3270/select.c
+--- suite3270-3.6/x3270/select.c	2017-12-30 02:48:20.000000000 +0000
++++ suite3270-3.6-mod/x3270/select.c	2018-01-24 12:35:43.000000000 +0000
+@@ -235,18 +235,18 @@
  	int class;
  
  	/* Find the initial character class */
@@ -516,7 +590,7 @@ index 4753e0c..192eaf0 100644
 -		ch = EBC_space;
 -	else
 +	//if (FA_IS_ZERO(fa))
-+	//	ch = EBC_space;
++		//ch = EBC_space;
 +	//else
  		ch = ea_buf[baddr].cc;
  	class = char_class[ebc2asc0[ch]];
@@ -528,12 +602,12 @@ index 4753e0c..192eaf0 100644
 -			ch = EBC_space;
 -		else
 +		//if (FA_IS_ZERO(fa))
-+		//	ch = EBC_space;
++			//ch = EBC_space;
 +		//else
  			ch = ea_buf[f_start].cc;
  		if (char_class[ebc2asc0[ch]] != class) {
  			f_start++;
-@@ -257,9 +257,9 @@ select_word(int baddr, Time t)
+@@ -257,9 +257,9 @@
  	/* Find the end */
  	for (f_end = baddr; (f_end+1) % COLS; f_end++) {
  		fa = get_field_attribute(f_end);
@@ -541,22 +615,22 @@ index 4753e0c..192eaf0 100644
 -			ch = EBC_space;
 -		else
 +		//if (FA_IS_ZERO(fa))
-+		//	ch = EBC_space;
++			//ch = EBC_space;
 +		//else
  			ch = ea_buf[f_end].cc;
  		if (char_class[ebc2asc0[ch]] != class) {
  			f_end--;
-@@ -863,7 +863,8 @@ Cut_xaction(Widget w _is_unused, XEvent *event, String *params,
+@@ -863,7 +863,8 @@
      for (baddr = 0; baddr < ROWS*COLS; baddr++) {
  	if (ea_buf[baddr].fa) {
  	    fa = ea_buf[baddr].fa;
 -	} else if ((IN_NVT || !FA_IS_PROTECTED(fa)) && screen_selected(baddr)) {
 +	//} else if ((IN_NVT || !FA_IS_PROTECTED(fa)) && screen_selected(baddr)) {
-+	} 	else if (IN_NVT && screen_selected(baddr))  {
++	} else if (IN_NVT && screen_selected(baddr)) {
  	    target[baddr/ULBS] |= 1L << (baddr%ULBS);
  	}
      }
-@@ -1314,10 +1315,10 @@ onscreen_char(int baddr, unsigned char *r, int *rlen)
+@@ -1314,10 +1315,10 @@
  	}
  
  	/* If it isn't visible, then make it a blank. */
@@ -565,8 +639,8 @@ index 4753e0c..192eaf0 100644
 -		return;
 -	}
 +	//if (FA_IS_ZERO(fa)) {
-+	//	*r = ' ';
-+	//	return;
++		//*r = ' ';
++		//return;
 +	//}
  
  	/* Handle DBCS. */
