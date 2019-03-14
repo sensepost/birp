@@ -1,0 +1,3 @@
+[submodule "submodules/py3270"]
+	path = submodules/py3270
+	url = https://github.com/singe/py3270
