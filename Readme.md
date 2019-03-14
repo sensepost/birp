@@ -37,6 +37,8 @@ optional arguments:
   -q, --quiet           Ssssh! Don't print info text.
 ```
 
+If building I added the py3270 module as a submodule, so be sure to update it.
+
 Running
 -------
 
