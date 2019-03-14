@@ -9,6 +9,34 @@ BIRP is a tool that will assist in the security assessment of mainframe applicat
 
 In particular, BIRP provides two capabilities for the aspiring TN3270 hacker. The first is that it shows all the data returned by the application in the screen. This includes hidden fields. The second is that it allows fields marked as "protected" aka "non modifiable" to be modified. Depending on how the application has been developed, this can allow application functionality to be modified.
 
+
+Dockerisation
+--------
+Dockerisation should now work.  Build or Pull, then run with something similar to:
+
+docker run  -it -e DISPLAY=$DISPLAY  -v /tmp/.X11-unix:/tmp/.X11-unix birp <BIRP options>
+
+eg
+```
+→ docker run  -it -e DISPLAY=$DISPLAY  -v /tmp/.X11-unix:/tmp/.X11-unix birp -h
+usage: birp.py [-h] [-t TARGET] [-s SLEEP] [-l LOADFILE] [-q]
+
+Big Iron Recon & Pwnage (BIRP) by @singe
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -t TARGET, --target TARGET
+                        Target IP address or hostname & port: TARGET[:PORT].
+                        The default port is 23. If you don't specify a target,
+                        you can manually specify it in the emulator
+  -s SLEEP, --sleep SLEEP
+                        Seconds to sleep between actions (increase on slower
+                        systems). The default is 0 seconds.
+  -l LOADFILE, --load LOADFILE
+                        Load a previously saved history file
+  -q, --quiet           Ssssh! Don't print info text.
+```
+
 Running
 -------
 
@@ -31,7 +59,7 @@ Interactive mode is the heart of BIRPs functionality. It will pass keypresses an
 
 In interactive mode hitting Ctrl-h will print a help screen, Ctrl-k will display a color key, and ESC will exit back to the menu.
 
-BIRP tries to work out when a "transaction" has occurred, and record the before and after screen, as well as the modified fields. Certain keys are usually guaranteed to initiate a transaction such as Enter or any of the PF/PA keys. However, if for any reason the screen requires different keys to function, you can manually "push" a transaction with Ctrl-u right after performing the action. 
+BIRP tries to work out when a "transaction" has occurred, and record the before and after screen, as well as the modified fields. Certain keys are usually guaranteed to initiate a transaction such as Enter or any of the PF/PA keys. However, if for any reason the screen requires different keys to function, you can manually "push" a transaction with Ctrl-u right after performing the action.
 
 Finally, if you want to have the screen re-printed hit Ctrl-r.
 
