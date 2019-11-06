@@ -1,6 +1,6 @@
-diff -ur suite3270-3.6/Common/ctlr.c suite3270-3.6-mod/Common/ctlr.c
---- suite3270-3.6/Common/ctlr.c	2017-12-30 02:48:19.000000000 +0000
-+++ suite3270-3.6-mod/Common/ctlr.c	2018-01-24 10:16:01.000000000 +0000
+diff -ru suite3270-3.6ga8/Common/ctlr.c suite3270-3.6ga8-mod/Common/ctlr.c
+--- suite3270-3.6ga8/Common/ctlr.c	2018-02-10 22:07:44.000000000 +0000
++++ suite3270-3.6ga8-mod/Common/ctlr.c	2019-11-06 12:40:01.000000000 +0000
 @@ -474,7 +474,7 @@
  		baddr = nbaddr;
  		INC_BA(nbaddr);
@@ -46,7 +46,7 @@ diff -ur suite3270-3.6/Common/ctlr.c suite3270-3.6-mod/Common/ctlr.c
 -			    !FA_IS_PROTECTED(ea_buf[buffer_addr].fa)) {
 +			if (ea_buf[buffer_addr].fa) {
 +			//if (ea_buf[buffer_addr].fa &&
-+			 //   !FA_IS_PROTECTED(ea_buf[buffer_addr].fa)) {
++			    //!FA_IS_PROTECTED(ea_buf[buffer_addr].fa)) {
  				INC_BA(buffer_addr);
  				last_zpt = false;
  				last_cmd = true;
@@ -60,16 +60,16 @@ diff -ur suite3270-3.6/Common/ctlr.c suite3270-3.6-mod/Common/ctlr.c
  					ctlr_add(buffer_addr, EBC_null,
  					    CS_BASE);
  				}
-diff -ur suite3270-3.6/Common/fprint_screen.c suite3270-3.6-mod/Common/fprint_screen.c
---- suite3270-3.6/Common/fprint_screen.c	2017-12-30 02:48:19.000000000 +0000
-+++ suite3270-3.6-mod/Common/fprint_screen.c	2018-01-24 12:33:06.000000000 +0000
+diff -ru suite3270-3.6ga8/Common/fprint_screen.c suite3270-3.6ga8-mod/Common/fprint_screen.c
+--- suite3270-3.6ga8/Common/fprint_screen.c	2018-02-10 22:07:44.000000000 +0000
++++ suite3270-3.6ga8-mod/Common/fprint_screen.c	2019-11-06 12:45:34.000000000 +0000
 @@ -79,7 +79,8 @@
  		HOST_COLOR_BLUE,         /* protected */
  		HOST_COLOR_WHITE         /* protected, intensified */
  #       define DEFCOLOR_MAP(f) \
 -		((((f) & FA_PROTECT) >> 4) | (((f) & FA_INT_HIGH_SEL) >> 3))
 +		(((f) & FA_INT_HIGH_SEL) >> 3)
-+		//((((f) & FA_PROTECT) >> 4) | (((f) & FA_INT_HIGH_SEL) >> 3))
++		// ((((f) & FA_PROTECT) >> 4) | (((f) & FA_INT_HIGH_SEL) >> 3))
  	};
  
  	if (appres.m3279)
@@ -77,7 +77,7 @@ diff -ur suite3270-3.6/Common/fprint_screen.c suite3270-3.6-mod/Common/fprint_sc
  	unsigned char fa = ea_buf[fa_addr].fa;
  	int fa_fg, current_fg;
  	int fa_bg, current_bg;
-+  int fa_zero = 0;
++	int fa_zero = 0;
  	bool fa_high, current_high;
  	bool fa_ital, current_ital;
  	bool mi;
@@ -90,51 +90,44 @@ diff -ur suite3270-3.6/Common/fprint_screen.c suite3270-3.6-mod/Common/fprint_sc
 -			else
 -				uc = ' ';
 +			//if (ctlr_dbcs_state(i) == DBCS_LEFT)
-+			    	//uc = 0x3000;
++			    //uc = 0x3000;
 +			//else
 +				//uc = ' ';
-+      if (fa_zero > 0) { //invert colours for hidden fields
-+        fa_zero = fa_fg;
-+        fa_fg = fa_bg;
-+        fa_bg = fa_zero;
-+        fa_zero = -1;
-+      } else {
-+        fa_zero = 1; //set the flag
-+      }
++			if (fa_zero > 0) { //invert colours for hidden fields
++				fa_zero = fa_fg;
++				fa_fg = fa_bg;
++				fa_bg = fa_zero;
++				fa_zero = -1;
++			} else {
++				fa_zero = 1; // set the flag
++			}
  		} else {
  		    	/* Convert EBCDIC to Unicode. */
  			switch (ctlr_dbcs_state(i)) {
-diff -ur suite3270-3.6/Common/kybd.c suite3270-3.6-mod/Common/kybd.c
---- suite3270-3.6/Common/kybd.c	2017-12-30 02:48:19.000000000 +0000
-+++ suite3270-3.6-mod/Common/kybd.c	2018-01-24 12:35:15.000000000 +0000
-@@ -1004,20 +1004,20 @@
+diff -ru suite3270-3.6ga8/Common/kybd.c suite3270-3.6ga8-mod/Common/kybd.c
+--- suite3270-3.6ga8/Common/kybd.c	2018-02-10 22:07:44.000000000 +0000
++++ suite3270-3.6ga8-mod/Common/kybd.c	2019-11-06 12:59:33.000000000 +0000
+@@ -1004,12 +1004,12 @@
  	    auto_skip = false;
  	}
  
 -	if (ea_buf[baddr].fa || FA_IS_PROTECTED(fa)) {
--	    if (!auto_skip) {
-+	//if (ea_buf[baddr].fa || FA_IS_PROTECTED(fa)) {
-+	    //if (!auto_skip) {
++	/*if (ea_buf[baddr].fa || FA_IS_PROTECTED(fa)) {
+ 	    if (!auto_skip) {
  		/*
  		 * In overlay-paste mode, protected fields cause paste buffer
  		 * data to be dropped while moving the cursor right.
- 		 */
--		INC_BA(baddr);
--		cursor_move(baddr);
--		return true;
--	    } else {
--		operator_error(KL_OERR_PROTECTED);
--		return false;
--	    }
+-		 */
++		 * /
+ 		INC_BA(baddr);
+ 		cursor_move(baddr);
+ 		return true;
+@@ -1017,7 +1017,7 @@
+ 		operator_error(KL_OERR_PROTECTED);
+ 		return false;
+ 	    }
 -	}
-+		//INC_BA(baddr);
-+		//cursor_move(baddr);
-+		//return true;
-+	    //} else {
-+		//operator_error(KL_OERR_PROTECTED);
-+		//return false;
-+	    //}
-+	//}
++	}*/
  	if (appres.numeric_lock && FA_IS_NUMERIC(fa) &&
  	    !((ebc >= EBC_0 && ebc <= EBC_9) ||
  	      ebc == EBC_minus || ebc == EBC_period)) {
@@ -143,13 +136,11 @@ diff -ur suite3270-3.6/Common/kybd.c suite3270-3.6-mod/Common/kybd.c
  
  	/* Protected? */
 -	if (ea_buf[baddr].fa || FA_IS_PROTECTED(fa)) {
--		operator_error(KL_OERR_PROTECTED);
--		return false;
++	/*if (ea_buf[baddr].fa || FA_IS_PROTECTED(fa)) {
+ 		operator_error(KL_OERR_PROTECTED);
+ 		return false;
 -	}
-+	//if (ea_buf[baddr].fa || FA_IS_PROTECTED(fa)) {
-+		//operator_error(KL_OERR_PROTECTED);
-+		//return false;
-+	//}
++	}*/
  
  	/* Numeric? */
  	if (appres.numeric_lock && FA_IS_NUMERIC(fa)) {
@@ -167,13 +158,11 @@ diff -ur suite3270-3.6/Common/kybd.c suite3270-3.6-mod/Common/kybd.c
  	/* Can't delete a field attribute. */
  	fa = get_field_attribute(baddr);
 -	if (FA_IS_PROTECTED(fa) || ea_buf[baddr].fa) {
--		operator_error(KL_OERR_PROTECTED);
--		return false;
++	/*if (FA_IS_PROTECTED(fa) || ea_buf[baddr].fa) {
+ 		operator_error(KL_OERR_PROTECTED);
+ 		return false;
 -	}
-+	//if (FA_IS_PROTECTED(fa) || ea_buf[baddr].fa) {
-+		//operator_error(KL_OERR_PROTECTED);
-+		//return false;
-+	//}
++	}*/
  	if (ea_buf[baddr].cc == EBC_so || ea_buf[baddr].cc == EBC_si) {
  		/*
  		 * Can't delete SO or SI, unless it's adjacent to its
@@ -182,11 +171,10 @@ diff -ur suite3270-3.6/Common/kybd.c suite3270-3.6-mod/Common/kybd.c
  		if (ea_buf[xaddr].cc == SOSI(ea_buf[baddr].cc)) {
  			ndel = 2;
 -		} else {
--			operator_error(KL_OERR_PROTECTED);
++		/*} else {
+ 			operator_error(KL_OERR_PROTECTED);
 -			return false;
-+		//} else {
-+			//operator_error(KL_OERR_PROTECTED);
-+			//return false;
++			return false;*/
  		}
  	} else if (IS_DBCS(ea_buf[baddr].db)) {
  		if (IS_RIGHT(ea_buf[baddr].db))
@@ -195,13 +183,11 @@ diff -ur suite3270-3.6/Common/kybd.c suite3270-3.6-mod/Common/kybd.c
  	baddr = cursor_addr;
  	faddr = find_field_attribute(baddr);
 -	if (faddr == baddr || FA_IS_PROTECTED(ea_buf[baddr].fa)) {
--		operator_error(KL_OERR_PROTECTED);
--		return;
++	/*if (faddr == baddr || FA_IS_PROTECTED(ea_buf[baddr].fa)) {
+ 		operator_error(KL_OERR_PROTECTED);
+ 		return;
 -	}
-+	//if (faddr == baddr || FA_IS_PROTECTED(ea_buf[baddr].fa)) {
-+		//operator_error(KL_OERR_PROTECTED);
-+		//return;
-+	//}
++	}*/
  	if (baddr && faddr == baddr - 1)
  		return;
  	do_left();
@@ -243,26 +229,21 @@ diff -ur suite3270-3.6/Common/kybd.c suite3270-3.6-mod/Common/kybd.c
  			return baddr;
  		INC_BA(baddr);
  	} while (baddr != baddr0);
-@@ -2392,14 +2394,14 @@
+@@ -2391,7 +2393,7 @@
+ 	return false;
      }
  
-     /* If not in an unprotected field, go to the next unprotected word. */
--    if (ea_buf[cursor_addr].fa ||
--	FA_IS_PROTECTED(get_field_attribute(cursor_addr))) {
--	baddr = nu_word(cursor_addr);
--	if (baddr != -1) {
--	    cursor_move(baddr);
--	}
--	return true;
+-    /* If not in an unprotected field, go to the next unprotected word. */
++    /* If not in an unprotected field, go to the next unprotected word. * /
+     if (ea_buf[cursor_addr].fa ||
+ 	FA_IS_PROTECTED(get_field_attribute(cursor_addr))) {
+ 	baddr = nu_word(cursor_addr);
+@@ -2399,7 +2401,7 @@
+ 	    cursor_move(baddr);
+ 	}
+ 	return true;
 -    }
-+    //if (ea_buf[cursor_addr].fa ||
-+	//FA_IS_PROTECTED(get_field_attribute(cursor_addr))) {
-+	//baddr = nu_word(cursor_addr);
-+	//if (baddr != -1) {
-+	    //cursor_move(baddr);
-+	//}
-+	//return true;
-+    //}
++    }*/
  
      /* If there's another word in this field, go to it. */
      baddr = nt_word(cursor_addr);
@@ -272,7 +253,7 @@ diff -ur suite3270-3.6/Common/kybd.c suite3270-3.6-mod/Common/kybd.c
      fa = ea_buf[faddr].fa;
 -    if (faddr != baddr && !FA_IS_PROTECTED(fa)) {
 +    //if (faddr != baddr && !FA_IS_PROTECTED(fa)) {
-+    if (faddr != baddr) {
++	if (faddr != baddr) {
  	cursor_move(baddr);
      } else {
  	cursor_move(next_unprotected(baddr));
@@ -281,13 +262,11 @@ diff -ur suite3270-3.6/Common/kybd.c suite3270-3.6-mod/Common/kybd.c
      baddr = cursor_addr;
      fa = get_field_attribute(baddr);
 -    if (FA_IS_PROTECTED(fa) || ea_buf[baddr].fa) {
--	operator_error(KL_OERR_PROTECTED);
--	return false;
++    /*if (FA_IS_PROTECTED(fa) || ea_buf[baddr].fa) {
+ 	operator_error(KL_OERR_PROTECTED);
+ 	return false;
 -    }
-+    //if (FA_IS_PROTECTED(fa) || ea_buf[baddr].fa) {
-+	//operator_error(KL_OERR_PROTECTED);
-+	//return false;
-+    //}
++    }*/
      if (formatted) {	/* erase to next field attribute */
  	do {
  	    ctlr_add(baddr, EBC_null, 0);
@@ -305,30 +284,26 @@ diff -ur suite3270-3.6/Common/kybd.c suite3270-3.6-mod/Common/kybd.c
  		    }
  		} while (!ea_buf[baddr].fa);
 -	    } else {	/* skip protected */
--		do {
--		    INC_BA(baddr);
--		} while (!ea_buf[baddr].fa);
++	    /*} else {	/* skip protected * /
+ 		do {
+ 		    INC_BA(baddr);
+ 		} while (!ea_buf[baddr].fa);
 -	    }
-+	    //} else {	/* skip protected */
-+		//do {
-+		    //INC_BA(baddr);
-+		//} while (!ea_buf[baddr].fa);
-+	    //}
++	    }*/
  	} while (baddr != sbaddr);
  	if (!f) {
  	    cursor_move(0);
-@@ -2906,10 +2909,10 @@
+@@ -2905,11 +2908,11 @@
+     baddr = cursor_addr;
      fa = get_field_attribute(baddr);
  
-     /* Make sure we're on a modifiable field. */
--    if (FA_IS_PROTECTED(fa) || ea_buf[baddr].fa) {
--	operator_error(KL_OERR_PROTECTED);
--	return false;
+-    /* Make sure we're on a modifiable field. */
++    /* Make sure we're on a modifiable field. * /
+     if (FA_IS_PROTECTED(fa) || ea_buf[baddr].fa) {
+ 	operator_error(KL_OERR_PROTECTED);
+ 	return false;
 -    }
-+    //if (FA_IS_PROTECTED(fa) || ea_buf[baddr].fa) {
-+	//operator_error(KL_OERR_PROTECTED);
-+	//return false;
-+    //}
++    }*/
  
      /* Backspace over any spaces to the left of the cursor. */
      for (;;) {
@@ -337,13 +312,11 @@ diff -ur suite3270-3.6/Common/kybd.c suite3270-3.6-mod/Common/kybd.c
      baddr = cursor_addr;
      fa = get_field_attribute(baddr);
 -    if (FA_IS_PROTECTED(fa) || ea_buf[baddr].fa) {
--	operator_error(KL_OERR_PROTECTED);
--	return false;
++    /*if (FA_IS_PROTECTED(fa) || ea_buf[baddr].fa) {
+ 	operator_error(KL_OERR_PROTECTED);
+ 	return false;
 -    }
-+    //if (FA_IS_PROTECTED(fa) || ea_buf[baddr].fa) {
-+	//operator_error(KL_OERR_PROTECTED);
-+	//return false;
-+    //}
++    }*/
      while (!ea_buf[baddr].fa) {
  	DEC_BA(baddr);
      }
@@ -352,11 +325,10 @@ diff -ur suite3270-3.6/Common/kybd.c suite3270-3.6-mod/Common/kybd.c
      faddr = find_field_attribute(baddr);
      fa = ea_buf[faddr].fa;
 -    if (faddr == baddr || FA_IS_PROTECTED(fa)) {
--	return true;
++    /*if (faddr == baddr || FA_IS_PROTECTED(fa)) {
+ 	return true;
 -    }
-+    //if (faddr == baddr || FA_IS_PROTECTED(fa)) {
-+	//return true;
-+    //}
++    }*/
  
      baddr = faddr;
      while (true) {
@@ -365,15 +337,12 @@ diff -ur suite3270-3.6/Common/kybd.c suite3270-3.6-mod/Common/kybd.c
  		faddr = find_field_attribute(baddr);
  		fa = ea_buf[faddr].fa;
 -		if (faddr == baddr || FA_IS_PROTECTED(fa)) {
--			baddr = next_unprotected(baddr);
--			if (baddr <= b0)
--				return false;
++		/*if (faddr == baddr || FA_IS_PROTECTED(fa)) {
+ 			baddr = next_unprotected(baddr);
+ 			if (baddr <= b0)
+ 				return false;
 -		}
-+		//if (faddr == baddr || FA_IS_PROTECTED(fa)) {
-+			//baddr = next_unprotected(baddr);
-+			//if (baddr <= b0)
-+				//return false;
-+		//}
++		}*/
  	}
  
  	cursor_move(baddr);
@@ -412,10 +381,10 @@ diff -ur suite3270-3.6/Common/kybd.c suite3270-3.6-mod/Common/kybd.c
  
  	/* Move the cursor to the beginning of the field. */
  	cursor_move(baddr);
-diff -ur suite3270-3.6/Common/macros.c suite3270-3.6-mod/Common/macros.c
---- suite3270-3.6/Common/macros.c	2017-12-30 02:48:19.000000000 +0000
-+++ suite3270-3.6-mod/Common/macros.c	2018-01-24 10:47:01.000000000 +0000
-@@ -2289,8 +2289,8 @@
+diff -ru suite3270-3.6ga8/Common/macros.c suite3270-3.6ga8-mod/Common/macros.c
+--- suite3270-3.6ga8/Common/macros.c	2018-02-10 22:07:44.000000000 +0000
++++ suite3270-3.6ga8-mod/Common/macros.c	2019-11-06 14:17:31.000000000 +0000
+@@ -2330,8 +2330,8 @@
  	    if (buf[first + i].fa) {
  		is_zero = FA_IS_ZERO(buf[first + i].fa);
  		vb_appends(&r, " ");
@@ -426,7 +395,7 @@ diff -ur suite3270-3.6/Common/macros.c suite3270-3.6-mod/Common/macros.c
  	    } else if (IS_LEFT(ctlr_dbcs_state(first + i))) {
  		xlen = ebcdic_to_multibyte(
  			(buf[first + i].cc << 8) | buf[first + i + 1].cc,
-@@ -2725,11 +2725,11 @@
+@@ -2766,11 +2766,11 @@
  	unsigned char fa;
  
  	fa = get_field_attribute(cursor_addr);
@@ -442,9 +411,9 @@ diff -ur suite3270-3.6/Common/macros.c suite3270-3.6-mod/Common/macros.c
      }
  
      if (CONNECTED) {
-diff -ur suite3270-3.6/x3270/screen.c suite3270-3.6-mod/x3270/screen.c
---- suite3270-3.6/x3270/screen.c	2017-12-30 02:48:20.000000000 +0000
-+++ suite3270-3.6-mod/x3270/screen.c	2018-01-24 12:28:02.000000000 +0000
+diff -ru suite3270-3.6ga8/x3270/screen.c suite3270-3.6ga8-mod/x3270/screen.c
+--- suite3270-3.6ga8/x3270/screen.c	2018-02-10 22:07:45.000000000 +0000
++++ suite3270-3.6ga8-mod/x3270/screen.c	2019-11-06 14:25:36.000000000 +0000
 @@ -2803,9 +2803,9 @@
  	    bool is_vc = false;
  
@@ -475,15 +444,15 @@ diff -ur suite3270-3.6/x3270/screen.c suite3270-3.6-mod/x3270/screen.c
  		if (sbp->fg) {
  		    e_color = sbp->fg & COLOR_MASK;
  		} else if (appres.interactive.mono && (gr & GR_INTENSIFY)) {
-@@ -2833,23 +2833,28 @@
+@@ -2833,14 +2833,18 @@
  		    e_color = INVERT_COLOR(e_color);
  		    reverse = true;
  		}
 -	    }
-+    if (zero) {
-+		    e_color = INVERT_COLOR(e_color);
++		if (zero) {
++			e_color = INVERT_COLOR(e_color);
 +		    reverse = true;
-+    }
++		}
 +	    //}
  	    if (!appres.interactive.mono) {
  		b.bits.fg = e_color;
@@ -492,26 +461,17 @@ diff -ur suite3270-3.6/x3270/screen.c suite3270-3.6-mod/x3270/screen.c
  	    /* Find the right character and character set. */
  	    d = ctlr_dbcs_state(baddr);
 -	    if (zero) {
--		if (visible_control) {
--		    b.bits.cc = EBC_space;
--		} else if (CROSSABLE && CROSSED(baddr)) {
--		    b.bits.cs = CS_APL;
--		    b.bits.cc = map_crosshair(baddr);
--		    b.bits.fg = CROSS_COLOR;
--		    b.bits.gr = 0;
--		}
++	    /*if (zero) {
+ 		if (visible_control) {
+ 		    b.bits.cc = EBC_space;
+ 		} else if (CROSSABLE && CROSSED(baddr)) {
+@@ -2849,7 +2853,8 @@
+ 		    b.bits.fg = CROSS_COLOR;
+ 		    b.bits.gr = 0;
+ 		}
 -	    } else if (((!visible_control || c != EBC_null) &&
-+	    //if (zero) {
-+		//if (visible_control) {
-+		    //b.bits.cc = EBC_space;
-+		//} else if (CROSSABLE && CROSSED(baddr)) {
-+		    //b.bits.cs = CS_APL;
-+		    //b.bits.cc = map_crosshair(baddr);
-+		    //b.bits.fg = CROSS_COLOR;
-+		    //b.bits.gr = 0;
-+		//}
-+	    //} else if (((!visible_control || c != EBC_null) &&
-+	    if (((!visible_control || c != EBC_null) &&
++	    } else if (((!visible_control || c != EBC_null) &&*/
++		if (((!visible_control || c != EBC_null) &&
  			(c != EBC_space || d != DBCS_NONE)) ||
  		       (gr & (GR_REVERSE | GR_UNDERLINE)) ||
  		       visible_control) {
@@ -520,19 +480,14 @@ diff -ur suite3270-3.6/x3270/screen.c suite3270-3.6-mod/x3270/screen.c
       * For non-display fields, we ignore gr and fg.
       */
 -    if (FA_IS_ZERO(fa)) {
--	color = fa_color(fa);
--	if (appres.interactive.mono && SELECTED(baddr)) {
--	    color = INVERT_COLOR(color);
--	}
--	return color;
++    /*if (FA_IS_ZERO(fa)) {
+ 	color = fa_color(fa);
+ 	if (appres.interactive.mono && SELECTED(baddr)) {
+ 	    color = INVERT_COLOR(color);
+ 	}
+ 	return color;
 -    }
-+    //if (FA_IS_ZERO(fa)) {
-+	//color = fa_color(fa);
-+	//if (appres.interactive.mono && SELECTED(baddr)) {
-+	    //color = INVERT_COLOR(color);
-+	//}
-+	//return color;
-+    //}
++    }*/
  
      /*
       * Find the color of the character or the field.
@@ -579,9 +534,9 @@ diff -ur suite3270-3.6/x3270/screen.c suite3270-3.6-mod/x3270/screen.c
      }
  }
  
-diff -ur suite3270-3.6/x3270/select.c suite3270-3.6-mod/x3270/select.c
---- suite3270-3.6/x3270/select.c	2017-12-30 02:48:20.000000000 +0000
-+++ suite3270-3.6-mod/x3270/select.c	2018-01-24 12:35:43.000000000 +0000
+diff -ru suite3270-3.6ga8/x3270/select.c suite3270-3.6ga8-mod/x3270/select.c
+--- suite3270-3.6ga8/x3270/select.c	2018-02-10 22:07:45.000000000 +0000
++++ suite3270-3.6ga8-mod/x3270/select.c	2019-11-06 14:27:55.000000000 +0000
 @@ -235,18 +235,18 @@
  	int class;
  
@@ -635,13 +590,11 @@ diff -ur suite3270-3.6/x3270/select.c suite3270-3.6-mod/x3270/select.c
  
  	/* If it isn't visible, then make it a blank. */
 -	if (FA_IS_ZERO(fa)) {
--		*r = ' ';
--		return;
++	/*if (FA_IS_ZERO(fa)) {
+ 		*r = ' ';
+ 		return;
 -	}
-+	//if (FA_IS_ZERO(fa)) {
-+		//*r = ' ';
-+		//return;
-+	//}
++	}*/
  
  	/* Handle DBCS. */
  	switch (ctlr_dbcs_state(baddr)) {

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from py3270 import Emulator,CommandError,FieldTruncateError,TerminatedError,WaitError,KeyboardStateError,FieldTruncateError,x3270App,s3270App
+from py3270 import Emulator,CommandError,FieldTruncateError,TerminatedError,WaitError,KeyboardStateError,FieldTruncateError,X3270App,S3270App
 import platform
 from time import sleep
 from sys import exit
@@ -79,19 +79,19 @@ class EmulatorIntermediate(Emulator):
 # Set the emulator intelligently based on your platform
 if platform.system() == 'Darwin':
 	class WrappedEmulator(EmulatorIntermediate):
-		x3270App.executable = './x3270'
-		s3270App.executable = 's3270'
+		X3270App.executable = 'x3270'
+		S3270App.executable = 's3270'
 elif platform.system() == 'Linux':
 	class WrappedEmulator(EmulatorIntermediate):
-		x3270App.executable = './x3270'
-		s3270App.executable = 's3270'
+		X3270App.executable = 'x3270'
+		S3270App.executable = 's3270'
 elif platform.system() == 'Windows':
 	class WrappedEmulator(EmulatorIntermediate):
 		#x3270_executable = 'Windows_Binaries/wc3270.exe'
-		x3270App.executable = 'wc3270.exe'
+		X3270App.executable = 'wc3270.exe'
 else:
 	logger('Your Platform:', platform.system(), 'is not supported at this time.',kind='err')
 	sys.exit(1)
-if not path.isfile(x3270App.executable):
-  print("Can't find the x3270 executable at "+x3270App.executable+" You can configure the location at the bottom of py3270wrapper.py")
+if not path.isfile(X3270App.executable):
+  print("Can't find the x3270 executable at "+X3270App.executable+" You can configure the location at the bottom of py3270wrapper.py")
   exit(1)
