@@ -68,7 +68,7 @@ Until py3270 accepts this pull request (https://github.com/py3270/py3270/pull/13
 The patches are included. You can download the source at http://x3270.bgp.nu/download.html then cd to the suite3270 directory once extracted, and patch -p1 < suite3270-full.patch
 You can use an unmodified client, but then you will not be able to edit protected fields.
 The patch makes two changes, the first is to allow protected fields to be edited, the other is to make hidden fields visible (shown in reverse text highlighting). This functionality is split into two other patched if you would only like one or the other for some reason.
-Requirements for compiling x3270 can be installed with the following command: `apt install libxmu-dev libxaw7-dev tcl-dev`
+Requirements for compiling x3270 can be installed with the following command: `apt install libssl-dev libxmu-dev libxaw7-dev tcl-dev`
 
 Design Choices
 --------------
