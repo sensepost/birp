@@ -61,13 +61,26 @@ Pre-requisites:
 ---------------
 
 * Python libraries: py3270 (v0.3.4), colorama, IPython
-These can be installed with pip or easy_install.
-Until py3270 accepts this pull request (https://github.com/py3270/py3270/pull/13) use my py3270 library (https://github.com/singe/py3270).
+* Sources of x3270 client (v3.6ga8)
 
-* Hacked x3270 client (v3.6)
-The patches are included. You can download the source at http://x3270.bgp.nu/download.html then cd to the suite3270 directory once extracted, and patch -p1 < suite3270-full.patch
-You can use an unmodified client, but then you will not be able to edit protected fields.
-The patch makes two changes, the first is to allow protected fields to be edited, the other is to make hidden fields visible (shown in reverse text highlighting). This functionality is split into two other patched if you would only like one or the other for some reason.
+How-to:
+---------------
+
+```
+# Check the requirements
+apt update
+apt install libssl-dev libxmu-dev libxaw7-dev tcl-dev python-pip
+pip install py3270 colorama IPython
+
+# Install BIRP and x3270 (patched)
+# You can download x3270 sources here: https://sourceforge.net/projects/x3270/files/x3270/3.6ga8/suite3270-3.6ga8-src.tgz/download
+git clone git@github.com:psmet/birp.git
+cd suite3270/
+patch -p1 < ../birp/suite3270-full.patch
+./configure
+make
+make install
+```
 
 Design Choices
 --------------
