@@ -18,12 +18,12 @@ class EmulatorIntermediate(Emulator):
             exit(1)
 
     def send_enter(self):  # Allow a delay to be configured
-        self.exec_command('Enter')
+        self.exec_command(b'Enter')
         if self.delay > 0:
             sleep(self.delay)
 
     def screen_get(self):
-        response = self.exec_command('Ascii()')
+        response = self.exec_command(b'Ascii()')
         return response.data
 
     # Send text without triggering field protection
@@ -71,16 +71,17 @@ class EmulatorIntermediate(Emulator):
 
     # Get the current x3270 cursor position
     def get_pos(self):
-        results = self.exec_command('Query(Cursor)')
-        row = int(results.data[0].split(' ')[0])
-        col = int(results.data[0].split(' ')[1])
+        results = self.exec_command(b'Query(Cursor)')
+        row = int(results.data[0].split(b' ')[0])
+        col = int(results.data[0].split(b' ')[1])
         return row, col
 
     def get_hostinfo(self):
-        return self.exec_command('Query(Host)').data[0].split(' ')
+        return self.exec_command(b'Query(Host)').data[0].split(b' ')
 
 
-# Patching __init__ method to support correct args
+# Patching __init__ method to support args
+# this fix is required for the current version of py3270(0.3.5)
 def executable_app_init(instance, args):
     if args:
         instance.args = instance.args + args

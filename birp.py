@@ -90,7 +90,7 @@ def logger(text, kind='clear', level=0):
 
 # Update a screen object with the latest x3270 screen
 def update_screen(em, screen):
-    screen = tn3270.Screen(em.exec_command('ReadBuffer(Ascii)').data)
+    screen = tn3270.Screen(em.exec_command(b'ReadBuffer(Ascii)').data)
     return screen
 
 
@@ -101,8 +101,8 @@ def exec_trans(em, history, key='enter'):
     check = tn3270.Screen
     request = update_screen(em, request)
     keypress = ''
-    hostinfo = em.exec_command('Query(Host)').data[0].split(' ')
-    host = hostinfo[1] + ':' + hostinfo[2]
+    hostinfo = em.exec_command(b'Query(Host)').data[0].split(b' ')
+    host = hostinfo[1] + b':' + hostinfo[2]
     data = request.modified_fields
     if key == 'enter':
         em.send_enter()
@@ -114,7 +114,7 @@ def exec_trans(em, history, key='enter'):
     elif 25 < key < 28:
         keypress = 'PA(' + str(key - 24) + ')'
         em.exec_command(keypress)
-    em.exec_command('Wait(1,3270Mode)')  # Capture the whole 3270 screen
+    em.exec_command(b'Wait(1,3270Mode)')  # Capture the whole 3270 screen
     response = update_screen(em, response)
     trans = tn3270.Transaction(request, response, data, keypress, host)
     history.append(trans)
@@ -198,13 +198,13 @@ def interactive(em, history):
         key = getch()
 
         if key == getch.KEY_UP:  # Up
-            em.exec_command('Up()')
+            em.exec_command(b'Up()')
         elif key == getch.KEY_DOWN:  # Down
-            em.exec_command('Down()')
+            em.exec_command(b'Down()')
         elif key == getch.KEY_LEFT:  # Left
-            em.exec_command('Left()')
+            em.exec_command(b'Left()')
         elif key == getch.KEY_RIGHT:  # Right
-            em.exec_command('Right()')
+            em.exec_command(b'Right()')
         elif key == getch.KEY_ENTER:  # Enter
             trans = exec_trans(em, history, 'enter')
             print(trans.response.colorbuffer)
@@ -216,8 +216,8 @@ def interactive(em, history):
         elif key == getch.KEY_CTRLu:  # Ctrl-u manually push transaction
             screen = update_screen(em, screen)
             data = screen.modified_fields
-            hostinfo = em.exec_command('Query(Host)').data[0].split(' ')
-            host = hostinfo[1] + ':' + hostinfo[2]
+            hostinfo = em.exec_command(b'Query(Host)').data[0].split(' ')
+            host = hostinfo[1] + b':' + hostinfo[2]
             trans = tn3270.Transaction(history.last().response, screen, data, 'manual', host)
             history.append(trans)
             print(screen.colorbuffer)
@@ -232,13 +232,13 @@ def interactive(em, history):
             em.save_screen(str(trans.timestamp.date()) + '_' + str(trans.timestamp.time()) + '.html')
             logger('Screenshot saved', kind='info')
         elif key == getch.KEY_TAB:  # Tab 9
-            em.exec_command('Tab()')
+            em.exec_command(b'Tab()')
         elif key == getch.KEY_BACKSPACE:  # Backspace
-            em.exec_command('BackSpace()')
+            em.exec_command(b'BackSpace()')
         elif key == getch.KEY_DELETE:  # Delete
-            em.exec_command('Delete()')
+            em.exec_command(b'Delete()')
         elif key == getch.KEY_CTRLc:  # Ctrl-c Clear
-            em.exec_command('Clear()')
+            em.exec_command(b'Clear()')
         elif key == getch.KEY_CTRLq:  # Ctrl-q PA1
             trans = exec_trans(em, history, 25)
             print(trans.response.colorbuffer)
@@ -581,7 +581,7 @@ if results.target:
         sys.exit(1)
 
     hostinfo = em.get_hostinfo()
-    host = hostinfo[1] + ':' + hostinfo[2]
+    host = hostinfo[1] + b':' + hostinfo[2]
 menu(em, history)
 
 # And we're done. Close the connection

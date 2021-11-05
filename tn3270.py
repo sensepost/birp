@@ -55,13 +55,13 @@ class Screen:
     def plainbuffer(self):
         plnbuf = list()
         for line in self.rawbuffer:
-            splitline = line.split(' ')
+            splitline = line.split(b' ')
             plainline = []
             for i in splitline:
                 if len(i) == 2:  # Not a field marker
                     plainline.append(i)
                 else:
-                    plainline.append('00')  # Use a NULL instead of a field marker
+                    plainline.append(b'00')  # Use a NULL instead of a field marker
             plnbuf.append(plainline)
         return plnbuf
 
@@ -93,9 +93,9 @@ class Screen:
             newline = list()
             newline.append('{:>2}'.format(counter) + ' ')  # line no
             counter += 1
-            for i in line.split(' '):
+            for i in line.split(b' '):
                 # SF(c0=c8) is example of StartField markup
-                if len(i) > 3 and i.find('SF(') >= 0:
+                if len(i) > 3 and i.find(b'SF(') >= 0:
                     attrib = int(i[3:5], 16)
                     val = int(i[6:8], 16)
 
@@ -143,7 +143,7 @@ class Screen:
         colbuf = list()
         for line in self.rawbuffer:
             newline = list()
-            for i in line.split(' '):
+            for i in line.split(b' '):
                 # SF(c0=c8) is example of StartField markup
                 if len(i) > 3 and i.find('SF(') >= 0:
                     attrib = int(i[3:5], 16)
@@ -181,9 +181,9 @@ class Screen:
         row = 0
         for line in self.rawbuffer:
             col = 0
-            for i in line.split(' '):
+            for i in line.split(b' '):
                 # SF(c0=c8) is example of StartField markup
-                if len(i) > 3 and i.find('SF(') >= 0:
+                if len(i) > 3 and i.find(b'SF(') >= 0:
                     attrib = int(i[3:5], 16)
                     val = int(i[6:8], 16)
 
