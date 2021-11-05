@@ -12,8 +12,8 @@ class EmulatorIntermediate(Emulator):
 		try:
 			Emulator.__init__(self, visible)
 			self.delay = delay
-		except OSError, e:
-			print("Can't run x3270, are you sure it's in the right place? Actual error: "+str(e))
+		except OSError as e:
+			print(("Can't run x3270, are you sure it's in the right place? Actual error: "+str(e)))
 			exit(1)
 
 	def send_enter(self): # Allow a delay to be configured
@@ -27,7 +27,7 @@ class EmulatorIntermediate(Emulator):
 
 	# Send text without triggering field protection
 	def safe_send(self, text):
-		for i in xrange(0,len(text)):
+		for i in range(0,len(text)):
 			self.send_string(text[i])
 			if self.status.field_protection == 'P':
 				return False # We triggered field protection, stop
@@ -45,19 +45,19 @@ class EmulatorIntermediate(Emulator):
 				return True # Hah, we win, take that mainframe
 			else:
 				return False # we entered what we could, bailing
-		except CommandError, e:
+		except CommandError as e:
 			# We hit an error, get mad
 			return False
 			# if str(e) == 'Keyboard locked':
 
 	# Search the screen for text when we don't know exactly where it is, checking for read errors
 	def find_response(self, response):
-		for rows in xrange(1,int(self.status.row_number)+1):
-			for cols in xrange(1,int(self.status.col_number)+1-len(response)):
+		for rows in range(1,int(self.status.row_number)+1):
+			for cols in range(1,int(self.status.col_number)+1-len(response)):
 				try:
 					if self.string_found(rows, cols, response):
 						return True
-				except CommandError, e:
+				except CommandError as e:
 					# We hit a read error, usually because the screen hasn't returned
 					# increasing the delay works
 					sleep(self.delay)
@@ -93,5 +93,5 @@ else:
 	logger('Your Platform:', platform.system(), 'is not supported at this time.',kind='err')
 	sys.exit(1)
 if not path.isfile(x3270App.executable):
-  print("Can't find the x3270 executable at "+x3270App.executable+" You can configure the location at the bottom of py3270wrapper.py")
+  print(("Can't find the x3270 executable at "+x3270App.executable+" You can configure the location at the bottom of py3270wrapper.py"))
   exit(1)

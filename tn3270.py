@@ -20,7 +20,7 @@ class Field:
 		self.modify = modify
 
 	def __repr__(self):
-		a = "<Field row:",`self.row`," col:",`self.col`," contents:",self.contents.strip(),">"
+		a = "<Field row:",repr(self.row)," col:",repr(self.col)," contents:",self.contents.strip(),">"
 		return ''.join(a)
 
 	def __str__(self):
@@ -76,7 +76,7 @@ class Screen:
 		return '\n'.join(self.stringbuffer).replace('\x00',' ')
 
 	def __repr__(self):
-		a = "<Screen rows:",`self.rows`," cols:",`self.cols`," firstline:",self.stringbuffer[0],">"
+		a = "<Screen rows:",repr(self.rows)," cols:",repr(self.cols)," firstline:",self.stringbuffer[0],">"
 		return ''.join(a)
 
 	@property
@@ -120,11 +120,11 @@ class Screen:
 					if not styleflag:
 						newline.append(Style.NORMAL)
 
-					newline.append(u'\u2219') #Field marker
+					newline.append('\u2219') #Field marker
 
 				elif len(i) == 2:
 					if i == '00':
-						newline.append(u"\u2400")
+						newline.append("\u2400")
 					else:
 						newline.append(i.decode("hex"))
 				#newline.append(Fore.RESET+Back.RESET+Style.RESET_ALL)
@@ -146,7 +146,7 @@ class Screen:
 					attrib = int(i[3:5],16)
 					val = int(i[6:8],16)
 
-					newline.append(u' ') #Field marker
+					newline.append(' ') #Field marker
 
 					modflag = False
 					hideflag = False
@@ -162,9 +162,9 @@ class Screen:
 
 				elif len(i) == 2:
 					if i == '00':
-						newline.append(u' ')
+						newline.append(' ')
 					elif hideflag:
-						newline.append(u' ')
+						newline.append(' ')
 					else:
 						newline.append(i.decode("hex"))
 			colbuf.append(''.join(newline))
@@ -232,7 +232,7 @@ class Screen:
 	@property
 	def protected_fields(self):
 		try:	
-			res = filter(lambda x: x.protected == 1, self.fields)
+			res = [x for x in self.fields if x.protected == 1]
 		except IndexError:
 			res = []
 		return res
@@ -240,7 +240,7 @@ class Screen:
 	@property
 	def input_fields(self):
 		try:	
-			res = filter(lambda x: x.protected == 0, self.fields)
+			res = [x for x in self.fields if x.protected == 0]
 		except IndexError:
 			res = []
 		return res
@@ -248,7 +248,7 @@ class Screen:
 	@property
 	def hidden_fields(self):
 		try:	
-			res = filter(lambda x: x.hidden == 1, self.fields)
+			res = [x for x in self.fields if x.hidden == 1]
 		except IndexError:
 			res = []
 		return res
@@ -256,7 +256,7 @@ class Screen:
 	@property
 	def modified_fields(self):
 		try:	
-			res = filter(lambda x: x.modify == 1, self.fields)
+			res = [x for x in self.fields if x.modify == 1]
 		except IndexError:
 			res = []
 		return res
