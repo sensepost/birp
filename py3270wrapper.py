@@ -63,7 +63,7 @@ class EmulatorIntermediate(Emulator):
                     # increasing the delay works
                     sleep(self.delay)
                     self.delay += 1
-                    whine(
+                    logger(
                         'Read error encountered, assuming host is slow, increasing delay by 1s to: ' + str(self.delay),
                         kind='warn')
                     return False
@@ -108,6 +108,6 @@ else:
     logger('Your Platform:', platform.system(), 'is not supported at this time.', kind='err')
     exit(1)
 if not path.isfile(X3270App.executable):
-    print((
-            "Can't find the x3270 executable at " + X3270App.executable + " You can configure the location at the bottom of py3270wrapper.py"))
+    print(
+            "Can't find the x3270 executable at " + X3270App.executable + " You can configure the location at the bottom of py3270wrapper.py")
     exit(1)
