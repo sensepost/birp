@@ -519,20 +519,24 @@ def prestartup():
     init()  # initialise coloured output from colorama
 
     # Define and fetch commandline arguments
-    parser = argparse.ArgumentParser( \
-        description='Big Iron Recon & Pwnage (BIRP) by @singe', \
-        epilog="It's easier than you think")
-    parser.add_argument('-t', '--target', \
-                        help='Target IP address or hostname & port: TARGET[:PORT]. The default port is 23. If you don\'t specify a target, you can manually specify it in the emulator', \
+    parser = argparse.ArgumentParser(description='Big Iron Recon & Pwnage (BIRP) by @singe',
+                                     epilog="It's easier than you think")
+    parser.add_argument('-t', '--target',
+                        help='Target IP address or hostname & port: TARGET[:PORT]. The default port is 23. If you don\'t specify a target, you can manually specify it in the emulator',
                         required=False, dest='target', default="")
-    parser.add_argument('-s', '--sleep', \
-                        help='Seconds to sleep between actions (increase on slower systems). The default is 0 seconds.', \
+    parser.add_argument('-s', '--sleep',
+                        help='Seconds to sleep between actions (increase on slower systems). The default is 0 seconds.',
                         default=0, type=float, dest='sleep')
-    parser.add_argument('-l', '--load', help='Load a previously saved history file', default='', \
-                        dest='loadfile', type=str)
-    parser.add_argument('-q', '--quiet', help="Ssssh! Don't print info text.", \
-                        default=False, dest='quiet', action='store_true')
+    parser.add_argument('-l', '--load', help='Load a previously saved history file.', default='', dest='loadfile',
+                        type=str)
+    parser.add_argument('-q', '--quiet', help="Ssssh! Don't print info text.", default=False, dest='quiet',
+                        action='store_true')
+    parser.add_argument('-p', '--proxy', help="Set proxy.", default=None, dest='proxy', action='store')
     results = parser.parse_args()
+
+    if results.proxy:
+        results.proxy = ["-proxy", results.proxy]
+
     return results
 
 
@@ -548,7 +552,7 @@ def startup():
     logger('Attack platform\t\t: ' + platform.system(), kind='info')
 
     if not platform.system() == 'Windows':
-        em = WrappedEmulator(visible=True, delay=results.sleep)
+        em = WrappedEmulator(visible=True, delay=results.sleep, args=results.proxy)
     elif platform.system() == 'Windows':
         logger('x3270 not supported on Windows', kind='err')
         sys.exit(1)

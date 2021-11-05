@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from py3270 import Emulator, CommandError, FieldTruncateError, X3270App, S3270App
+from py3270 import Emulator, CommandError, FieldTruncateError, X3270App, S3270App, ExecutableApp
 import platform
 from time import sleep
 from sys import exit
@@ -9,9 +9,9 @@ from os import path
 
 # Override some behaviour of py3270 library
 class EmulatorIntermediate(Emulator):
-    def __init__(self, visible=True, delay=0):
+    def __init__(self, visible=True, delay=0, args=None):
         try:
-            Emulator.__init__(self, visible)
+            Emulator.__init__(self, visible, args=args)
             self.delay = delay
         except OSError as e:
             print("Can't run x3270, are you sure it's in the right place? Actual error: " + str(e))
@@ -79,6 +79,16 @@ class EmulatorIntermediate(Emulator):
     def get_hostinfo(self):
         return self.exec_command('Query(Host)').data[0].split(' ')
 
+
+# Patching __init__ method to support correct args
+def executable_app_init(instance, args):
+    if args:
+        instance.args = instance.args + args
+    instance.sp = None
+    instance.spawn_app()
+
+
+ExecutableApp.__init__ = executable_app_init
 
 # Set the emulator intelligently based on your platform
 if platform.system() == 'Darwin':
