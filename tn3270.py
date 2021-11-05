@@ -70,7 +70,7 @@ class Screen:
     def stringbuffer(self):
         strbuf = list()
         for line in self.plainbuffer:
-            newstr = ''.join(line).decode("hex")
+            newstr = bytearray.fromhex(b''.join(line).decode('utf-8')).decode('ascii')
             strbuf.append(newstr)
         return strbuf
 
@@ -129,7 +129,7 @@ class Screen:
                     if i == '00':
                         newline.append("\u2400")
                     else:
-                        newline.append(i.decode("hex"))
+                        newline.append(chr(int(i, 16)))
             # newline.append(Fore.RESET+Back.RESET+Style.RESET_ALL)
             colbuf.append(''.join(newline))
         strcolbuf = '\n'.join(colbuf) + Fore.RESET + Back.RESET
@@ -169,7 +169,7 @@ class Screen:
                     elif hideflag:
                         newline.append(' ')
                     else:
-                        newline.append(i.decode("hex"))
+                        newline.append(chr(int(i, 16)))
             colbuf.append(''.join(newline))
         strcolbuf = '\n'.join(colbuf)
         return strcolbuf
@@ -225,7 +225,7 @@ class Screen:
 
                 # Add the character to the last field entity added
                 elif len(i) == 2:
-                    contents = i.decode("hex")
+                    contents = chr(int(i, 16))
                     if len(field_list) > 0:
                         field_list[len(field_list) - 1].contents += contents
 
