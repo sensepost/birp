@@ -216,7 +216,7 @@ def interactive(em, history):
         elif key == getch.KEY_CTRLu:  # Ctrl-u manually push transaction
             screen = update_screen(em, screen)
             data = screen.modified_fields
-            hostinfo = em.exec_command(b'Query(Host)').data[0].split(' ')
+            hostinfo = em.exec_command(b'Query(Host)').data[0].split(b' ')
             host = hostinfo[1] + b':' + hostinfo[2]
             trans = tn3270.Transaction(history.last().response, screen, data, 'manual', host)
             history.append(trans)
