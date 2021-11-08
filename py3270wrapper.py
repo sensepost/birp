@@ -79,6 +79,12 @@ class EmulatorIntermediate(Emulator):
     def get_hostinfo(self):
         return self.exec_command(b'Query(Host)').data[0].split(b' ')
 
+    def is_connected(self):
+        try:
+            return Emulator.is_connected(self)
+        except BrokenPipeError:
+            return False
+
 
 # Patching __init__ method to support args
 # this fix is required for the current version of py3270(0.3.5)
@@ -109,5 +115,5 @@ else:
     exit(1)
 if not path.isfile(X3270App.executable):
     print(
-            "Can't find the x3270 executable at " + X3270App.executable + " You can configure the location at the bottom of py3270wrapper.py")
+        "Can't find the x3270 executable at " + X3270App.executable + " You can configure the location at the bottom of py3270wrapper.py")
     exit(1)
