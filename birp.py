@@ -531,11 +531,17 @@ def prestartup():
                         type=str)
     parser.add_argument('-q', '--quiet', help="Ssssh! Don't print info text.", default=False, dest='quiet',
                         action='store_true')
-    parser.add_argument('-p', '--proxy', help="Set proxy.", default=None, dest='proxy', action='store')
+    parser.add_argument('--proxy', help="Set proxy.", default=[], dest='proxy', action='store')
+    parser.add_argument('--args', help="Pass arguments to x3270 executable.", default=[], dest='args', action='store')
     results = parser.parse_args()
 
-    if results.proxy:
-        results.proxy = ["-proxy", results.proxy]
+    if results.args:
+        results.args = results.args.split()
+
+    if results.proxy and "-proxy" not in results.args:
+            results.proxy = ["-proxy", results.proxy]
+    else:
+        results.proxy = []
 
     return results
 
@@ -552,7 +558,7 @@ def startup():
     logger('Attack platform\t\t: ' + platform.system(), kind='info')
 
     if not platform.system() == 'Windows':
-        em = EmulatorIntermediate(visible=True, delay=results.sleep, args=results.proxy)
+        em = EmulatorIntermediate(visible=True, delay=results.sleep, args=results.args + results.proxy)
     elif platform.system() == 'Windows':
         logger('x3270 not supported on Windows', kind='err')
         sys.exit(1)
