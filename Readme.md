@@ -2,6 +2,8 @@ Big Iron Recon & Pwnage (BIRP)
 ==============================
 by @singe (Dominic White @ SensePost)
 
+**This version run on Python3!**
+
 Overview
 --------
 
@@ -17,6 +19,8 @@ Running
 All you need is to specify a target with -t . Target specification can include a port with a : after the IP e.g. 10.10.10.10:1023. If no port is specified it will default to :23 as per x3270 default behaviour.
 
 You can use -l to load a previously saved history file into the history. You must always specify a target and cannot just view history yet unfortunately.
+
+You can use --args to push arguments to x3270 executable. Furthermore, a quick option(--proxy) has been added to specify the proxy to use.
 
 Check the pre-requisites below for installing. Unfortunately, this will only run in Unix environments at the moment, no Windows support.
 
