@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from py3270 import Emulator, CommandError, FieldTruncateError, X3270App, S3270App, ExecutableApp
+from py3270 import Emulator, Command, CommandError, FieldTruncateError, X3270App, S3270App, ExecutableApp
 import platform
 from time import sleep
 from sys import exit
@@ -84,6 +84,12 @@ class EmulatorIntermediate(Emulator):
             return Emulator.is_connected(self)
         except BrokenPipeError:
             return False
+
+    def exec_command(self, cmdstr):
+        try:
+            return Emulator.exec_command(self, cmdstr)
+        except BrokenPipeError:
+            return Command(self.app, cmdstr)
 
 
 # Patching __init__ method to support args
