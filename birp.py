@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from py3270wrapper import WrappedEmulator
+from py3270wrapper import EmulatorIntermediate
 import tn3270
 import sys
 import argparse
@@ -552,7 +552,7 @@ def startup():
     logger('Attack platform\t\t: ' + platform.system(), kind='info')
 
     if not platform.system() == 'Windows':
-        em = WrappedEmulator(visible=True, delay=results.sleep, args=results.proxy)
+        em = EmulatorIntermediate(visible=True, delay=results.sleep, args=results.proxy)
     elif platform.system() == 'Windows':
         logger('x3270 not supported on Windows', kind='err')
         sys.exit(1)

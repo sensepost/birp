@@ -104,22 +104,16 @@ def executable_app_init(instance, args):
 ExecutableApp.__init__ = executable_app_init
 
 # Set the emulator intelligently based on your platform
-if platform.system() == 'Darwin':
-    class WrappedEmulator(EmulatorIntermediate):
-        X3270App.executable = './x3270'
-        S3270App.executable = 's3270'
-elif platform.system() == 'Linux':
-    class WrappedEmulator(EmulatorIntermediate):
-        X3270App.executable = './x3270'
-        S3270App.executable = 's3270'
+if platform.system() == 'Linux' or platform.system() == 'Darwin':
+    X3270App.executable = './x3270'
+    S3270App.executable = 's3270'
 elif platform.system() == 'Windows':
-    class WrappedEmulator(EmulatorIntermediate):
-        # x3270_executable = 'Windows_Binaries/wc3270.exe'
-        X3270App.executable = 'wc3270.exe'
+    # x3270_executable = 'Windows_Binaries/wc3270.exe'
+    X3270App.executable = 'wc3270.exe'
 else:
     logger('Your Platform:', platform.system(), 'is not supported at this time.', kind='err')
     exit(1)
 if not path.isfile(X3270App.executable):
-    print(
-        "Can't find the x3270 executable at " + X3270App.executable + " You can configure the location at the bottom of py3270wrapper.py")
+    print("Can't find the x3270 executable at %s."
+          "You can configure the location at the bottom of py3270wrapper.py" % X3270App.executable)
     exit(1)
